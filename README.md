@@ -37,14 +37,14 @@ npm run build
 
 **Option A – environment variables** (recommended):
 ```bash
-export CB_URL=https://your-instance.example.com
+export CB_URL=https://your-instance.example.com/cb/api
 export CB_USERNAME=your_username
 export CB_PASSWORD=your_password
 ```
 
 **Option B – `.env` file** (local development):
 ```
-CB_URL=https://your-instance.example.com
+CB_URL=https://your-instance.example.com/cb/api
 CB_USERNAME=your_username
 CB_PASSWORD=your_password
 ```
@@ -61,7 +61,7 @@ Edit `.mcp.json` in the project root:
       "command": "node",
       "args": ["dist/index.js"],
       "env": {
-        "CB_URL": "https://your-instance.example.com",
+        "CB_URL": "https://your-instance.example.com/cb/api",
         "CB_USERNAME": "your_username",
         "CB_PASSWORD": "your_password"
       }
@@ -91,7 +91,7 @@ CB_URL=http://localhost:3001 CB_USERNAME=mock CB_PASSWORD=mock \
 
 | Variable | Description | Default |
 |---|---|---|
-| `CB_URL` | Codebeamer instance URL | _(required)_ |
+| `CB_URL` | Codebeamer API URL, e.g. `https://your-instance.example.com/cb/api` (the server appends `/v3` automatically) | _(required)_ |
 | `CB_USERNAME` | Login username | _(required)_ |
 | `CB_PASSWORD` | Password | _(required)_ |
 | `CB_API_VERSION` | API version | `v3` |
