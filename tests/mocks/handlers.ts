@@ -1,7 +1,7 @@
 import { http, HttpResponse } from "msw";
-import { makeProject, makeProjectPage } from "./fixtures/projects.js";
-import { makeTracker, makeTrackerField, makeTrackerPage } from "./fixtures/trackers.js";
-import { makeItem, makeItemPage, makeRelation, makeComment } from "./fixtures/items.js";
+import { makeProject } from "./fixtures/projects.js";
+import { makeTracker, makeTrackerField } from "./fixtures/trackers.js";
+import { makeItem, makeItemRelationsPage, makeComment } from "./fixtures/items.js";
 import { makeUser } from "./fixtures/users.js";
 
 const BASE = "https://test-cb.example.com/v3";
@@ -9,7 +9,7 @@ const BASE = "https://test-cb.example.com/v3";
 export const handlers = [
   // Projects
   http.get(`${BASE}/projects`, () =>
-    HttpResponse.json(makeProjectPage([makeProject(), makeProject({ id: 2, name: "Second Project", keyName: "SEC" })], 1, 25, 2)),
+    HttpResponse.json([makeProject(), makeProject({ id: 2, name: "Second Project", keyName: "SEC" })]),
   ),
 
   http.get(`${BASE}/projects/:id`, ({ params }) =>
@@ -18,7 +18,7 @@ export const handlers = [
 
   // Trackers
   http.get(`${BASE}/projects/:projectId/trackers`, () =>
-    HttpResponse.json(makeTrackerPage()),
+    HttpResponse.json([makeTracker()]),
   ),
 
   http.get(`${BASE}/trackers/:id/fields`, () =>
@@ -29,7 +29,7 @@ export const handlers = [
   ),
 
   http.get(`${BASE}/trackers/:id/items`, () =>
-    HttpResponse.json(makeItemPage()),
+    HttpResponse.json([makeItem()]),
   ),
 
   http.get(`${BASE}/trackers/:id`, ({ params }) =>
@@ -38,11 +38,11 @@ export const handlers = [
 
   // Items
   http.get(`${BASE}/items/query`, () =>
-    HttpResponse.json(makeItemPage([makeItem(), makeItem({ id: 501, name: "Another bug" })], 1, 25, 2)),
+    HttpResponse.json([makeItem(), makeItem({ id: 501, name: "Another bug" })]),
   ),
 
   http.get(`${BASE}/items/:id/relations`, () =>
-    HttpResponse.json([makeRelation()]),
+    HttpResponse.json(makeItemRelationsPage()),
   ),
 
   http.get(`${BASE}/items/:id/comments`, () =>

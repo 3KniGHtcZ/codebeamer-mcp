@@ -26,6 +26,13 @@ describe("list_projects", () => {
     expect(text).toContain("DEMO");
     expect(text).toContain("2 total");
   });
+
+  it("returns no projects message when list is empty", async () => {
+    const client = makeClient();
+    const text = formatProjectList([]);
+
+    expect(text).toContain("_No projects found._");
+  });
 });
 
 describe("get_project", () => {

@@ -166,20 +166,24 @@ const server = createServer((req, res) => {
 
   console.log(`${req.method} ${path}`);
 
-  // Projects
-  if (path === "/v3/projects") return json(res, page(projects, p, ps));
+  // Projects - real Codebeamer API returns a plain array (no pagination wrapper)
+  if (path === "/v3/projects") {
+    const start = (p - 1) * ps;
+    return json(res, projects.slice(start, start + ps));
+  }
   const projMatch = path.match(/^\/v3\/projects\/(\d+)$/);
   if (projMatch) {
     const proj = projects.find(x => x.id === Number(projMatch[1]));
     return proj ? json(res, proj) : notFound(res, `Project ${projMatch[1]} not found`);
   }
 
-  // Trackers in project
+  // Trackers in project - returns plain array
   const projTrackersMatch = path.match(/^\/v3\/projects\/(\d+)\/trackers$/);
   if (projTrackersMatch) {
     const projectId = Number(projTrackersMatch[1]);
     const filtered = trackers.filter(t => t.project.id === projectId);
-    return json(res, page(filtered.length ? filtered : trackers, p, ps));
+    const list = filtered.length ? filtered : trackers;
+    return json(res, list.slice((p - 1) * ps, p * ps));
   }
 
   // Tracker fields
@@ -189,12 +193,13 @@ const server = createServer((req, res) => {
     return json(res, trackerFields[id] ?? trackerFields.default);
   }
 
-  // Tracker items
+  // Tracker items - returns plain array
   const trackerItemsMatch = path.match(/^\/v3\/trackers\/(\d+)\/items$/);
   if (trackerItemsMatch) {
     const trackerId = Number(trackerItemsMatch[1]);
     const filtered = items.filter(i => i.tracker.id === trackerId);
-    return json(res, page(filtered.length ? filtered : items, p, ps));
+    const list = filtered.length ? filtered : items;
+    return json(res, list.slice((p - 1) * ps, p * ps));
   }
 
   // Single tracker
@@ -204,13 +209,13 @@ const server = createServer((req, res) => {
     return tracker ? json(res, tracker) : notFound(res, `Tracker ${trackerMatch[1]} not found`);
   }
 
-  // Item query
+  // Item query - returns plain array
   if (path === "/v3/items/query") {
     const q = url.searchParams.get("queryString") ?? "";
     const filtered = q.includes("status.name = \"In Progress\"")
       ? items.filter(i => i.status.name === "In Progress")
       : items;
-    return json(res, page(filtered, p, ps));
+    return json(res, filtered.slice((p - 1) * ps, p * ps));
   }
 
   // Item relations

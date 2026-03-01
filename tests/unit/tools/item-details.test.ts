@@ -3,6 +3,7 @@ import { HttpClient } from "../../../src/client/http-client.js";
 import { CodebeamerClient } from "../../../src/client/codebeamer-client.js";
 import {
   formatRelations,
+  formatReferences,
   formatComments,
 } from "../../../src/formatters/item-formatter.js";
 
@@ -18,15 +19,33 @@ function makeClient() {
 }
 
 describe("get_item_relations", () => {
-  it("returns formatted relations", async () => {
+  it("returns formatted associations", async () => {
     const client = makeClient();
-    const relations = await client.getItemRelations(500);
-    const text = formatRelations(relations);
+    const page = await client.getItemRelations(500);
+    const text = formatRelations(page);
 
-    expect(text).toContain("## Relations");
+    expect(text).toContain("## Associations");
+    expect(text).toContain("Outgoing");
     expect(text).toContain("depends on");
     expect(text).toContain("501");
-    expect(text).toContain("Fix auth module");
+    expect(text).toContain("Incoming");
+    expect(text).toContain("blocks");
+  });
+});
+
+describe("get_item_references", () => {
+  it("returns formatted upstream and downstream references", async () => {
+    const client = makeClient();
+    const page = await client.getItemRelations(500);
+    const text = formatReferences(page);
+
+    expect(text).toContain("## References");
+    expect(text).toContain("Upstream");
+    expect(text).toContain("derived from");
+    expect(text).toContain("REQ-42");
+    expect(text).toContain("Downstream");
+    expect(text).toContain("covers");
+    expect(text).toContain("TC-10");
   });
 });
 

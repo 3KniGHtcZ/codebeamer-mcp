@@ -3,9 +3,9 @@
     "codebeamer": {
       "type": "stdio",
       "command": "node",
-      "args": ["dist/index.js"],
+      "args": ["/Users/lenkaplackova/dev/codebeamer-mcp/dist/index.js"],
       "env": {
-        "CB_URL": "https://your-instance.example.com",
+        "CB_URL": "https://codebeamer.yourcompany.com",
         "CB_USERNAME": "your_username",
         "CB_PASSWORD": "your_password"
       }

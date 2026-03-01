@@ -1,12 +1,11 @@
-import type { CbProject, CbPage } from "../client/codebeamer-client.js";
+import type { CbProject } from "../client/codebeamer-client.js";
 
-export function formatProjectList(page: CbPage<CbProject>): string {
-  const totalPages = Math.ceil(page.total / page.pageSize);
-  const header = `## Projects (page ${page.page} of ${totalPages}, ${page.total} total)\n`;
+export function formatProjectList(projects: CbProject[]): string {
+  const header = `## Projects (${projects.length} total)\n`;
 
-  if (page.items.length === 0) return `${header}\n_No projects found._`;
+  if (projects.length === 0) return `${header}\n_No projects found._`;
 
-  const rows = page.items.map(
+  const rows = projects.map(
     (p) =>
       `| ${p.id} | ${p.name} | ${p.keyName} | ${p.closed ? "Closed" : "Open"} |`,
   );

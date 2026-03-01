@@ -1,17 +1,15 @@
 import type {
   CbItem,
-  CbPage,
-  CbRelation,
+  CbItemRelationsPage,
   CbComment,
 } from "../client/codebeamer-client.js";
 
-export function formatItemList(page: CbPage<CbItem>): string {
-  const totalPages = Math.ceil(page.total / page.pageSize);
-  const header = `## Items (page ${page.page} of ${totalPages}, ${page.total} total)\n`;
+export function formatItemList(items: CbItem[]): string {
+  const header = `## Items (${items.length} total)\n`;
 
-  if (page.items.length === 0) return `${header}\n_No items found._`;
+  if (items.length === 0) return `${header}\n_No items found._`;
 
-  const rows = page.items.map(
+  const rows = items.map(
     (item) =>
       `| ${item.id} | ${item.name} | ${item.status?.name ?? "-"} | ${item.priority?.name ?? "-"} | ${item.assignedTo?.map((u) => u.name).join(", ") || "-"} |`,
   );
@@ -41,7 +39,10 @@ export function formatItem(item: CbItem): string {
     lines.push(`- **Story Points:** ${item.storyPoints}`);
   }
 
-  const description = item.description?.value ?? item.description?.markup;
+  const description =
+    typeof item.description === "string"
+      ? item.description
+      : item.description?.value ?? item.description?.markup;
   if (description) {
     lines.push("", "### Description", "", description);
   }
@@ -67,21 +68,53 @@ function formatFieldValue(value: unknown): string {
   return String(value);
 }
 
-export function formatRelations(relations: CbRelation[]): string {
-  if (relations.length === 0) return "_No relations found._";
-
+function relationsTable(relations: { id: number; type?: { name?: string }; itemRevision?: { id: number; name: string } }[]): string[] {
   const rows = relations.map(
-    (r) =>
-      `| ${r.id} | ${r.type?.name ?? "?"} | ${r.itemRevision?.id ?? "?"} | ${r.itemRevision?.name ?? "?"} |`,
+    (r) => `| ${r.id} | ${r.type?.name ?? "?"} | ${r.itemRevision?.id ?? "?"} | ${r.itemRevision?.name ?? "?"} |`,
   );
-
   return [
-    `## Relations (${relations.length})`,
-    "",
     "| Relation ID | Type | Target ID | Target Name |",
     "|-------------|------|-----------|-------------|",
     ...rows,
-  ].join("\n");
+  ];
+}
+
+export function formatRelations(page: CbItemRelationsPage): string {
+  const outgoing = page.outgoingAssociations ?? [];
+  const incoming = page.incomingAssociations ?? [];
+  const total = outgoing.length + incoming.length;
+
+  if (total === 0) return "_No associations found._";
+
+  const lines: string[] = [`## Associations (${total})`];
+
+  if (outgoing.length > 0) {
+    lines.push("", `### Outgoing (${outgoing.length})`, "", ...relationsTable(outgoing));
+  }
+  if (incoming.length > 0) {
+    lines.push("", `### Incoming (${incoming.length})`, "", ...relationsTable(incoming));
+  }
+
+  return lines.join("\n");
+}
+
+export function formatReferences(page: CbItemRelationsPage): string {
+  const upstream = page.upstreamReferences ?? [];
+  const downstream = page.downstreamReferences ?? [];
+  const total = upstream.length + downstream.length;
+
+  if (total === 0) return "_No references found._";
+
+  const lines: string[] = [`## References (${total})`];
+
+  if (upstream.length > 0) {
+    lines.push("", `### Upstream (${upstream.length})`, "", ...relationsTable(upstream));
+  }
+  if (downstream.length > 0) {
+    lines.push("", `### Downstream (${downstream.length})`, "", ...relationsTable(downstream));
+  }
+
+  return lines.join("\n");
 }
 
 export function formatComments(comments: CbComment[]): string {
@@ -89,7 +122,7 @@ export function formatComments(comments: CbComment[]): string {
 
   const formatted = comments.map(
     (c) =>
-      `### ${c.createdBy?.name ?? "?"} — ${c.createdAt ?? ""}\n\n${c.text?.value ?? c.text?.markup ?? "_empty_"}`,
+      `### ${c.createdBy?.name ?? "?"} — ${c.createdAt ?? ""}\n\n${typeof c.text === "string" ? c.text : c.text?.value ?? c.text?.markup ?? "_empty_"}`,
   );
 
   return [`## Comments (${comments.length})`, "", ...formatted].join("\n\n");

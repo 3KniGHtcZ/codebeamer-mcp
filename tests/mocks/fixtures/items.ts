@@ -1,8 +1,8 @@
 import type {
   CbItem,
   CbRelation,
+  CbItemRelationsPage,
   CbComment,
-  CbPage,
 } from "../../../src/client/codebeamer-client.js";
 
 export function makeItem(overrides: Partial<CbItem> = {}): CbItem {
@@ -34,20 +34,6 @@ export function makeItem(overrides: Partial<CbItem> = {}): CbItem {
   };
 }
 
-export function makeItemPage(
-  items: CbItem[] = [makeItem()],
-  page = 1,
-  pageSize = 25,
-  total?: number,
-): CbPage<CbItem> {
-  return {
-    page,
-    pageSize,
-    total: total ?? items.length,
-    items,
-  };
-}
-
 export function makeRelation(
   overrides: Partial<CbRelation> = {},
 ): CbRelation {
@@ -55,6 +41,18 @@ export function makeRelation(
     id: 200,
     type: { id: 1, name: "depends on" },
     itemRevision: { id: 501, name: "Fix auth module", version: 3 },
+    ...overrides,
+  };
+}
+
+export function makeItemRelationsPage(
+  overrides: Partial<CbItemRelationsPage> = {},
+): CbItemRelationsPage {
+  return {
+    outgoingAssociations: [makeRelation()],
+    incomingAssociations: [makeRelation({ id: 201, type: { id: 2, name: "blocks" }, itemRevision: { id: 502, name: "Login crash on iOS", version: 1 } })],
+    upstreamReferences: [makeRelation({ id: 202, type: { id: 3, name: "derived from" }, itemRevision: { id: 301, name: "REQ-42: Auth must work on all browsers", version: 2 } })],
+    downstreamReferences: [makeRelation({ id: 203, type: { id: 4, name: "covers" }, itemRevision: { id: 601, name: "TC-10: Verify login on Safari", version: 1 } })],
     ...overrides,
   };
 }

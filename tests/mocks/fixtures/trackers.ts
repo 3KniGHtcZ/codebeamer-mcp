@@ -1,7 +1,6 @@
 import type {
   CbTracker,
   CbTrackerField,
-  CbPage,
 } from "../../../src/client/codebeamer-client.js";
 
 export function makeTracker(overrides: Partial<CbTracker> = {}): CbTracker {
@@ -29,16 +28,3 @@ export function makeTrackerField(
   };
 }
 
-export function makeTrackerPage(
-  items: CbTracker[] = [makeTracker()],
-  page = 1,
-  pageSize = 25,
-  total?: number,
-): CbPage<CbTracker> {
-  return {
-    page,
-    pageSize,
-    total: total ?? items.length,
-    items,
-  };
-}

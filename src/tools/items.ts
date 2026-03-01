@@ -74,8 +74,12 @@ export function registerItemTools(
       },
     },
     async ({ trackerId, page, pageSize }) => {
-      const result = await client.listTrackerItems(trackerId, page, pageSize);
-      return { content: [{ type: "text", text: formatItemList(result) }] };
+      const { items, debug } = await client.listTrackerItems(trackerId, page, pageSize);
+      let text = formatItemList(items);
+      if (items.length === 0 && debug) {
+        text += `\n\n---\n**Debug (raw API responses):**\n\`\`\`\n${debug}\n\`\`\``;
+      }
+      return { content: [{ type: "text", text }] };
     },
   );
 

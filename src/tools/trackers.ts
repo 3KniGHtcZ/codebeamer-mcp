@@ -61,12 +61,13 @@ export function registerTrackerTools(
       },
     },
     async ({ trackerId }) => {
-      const [tracker, fields] = await Promise.all([
+      const [tracker, fields, { items }] = await Promise.all([
         client.getTracker(trackerId),
         client.getTrackerFields(trackerId),
+        client.listTrackerItems(trackerId, 1, 100),
       ]);
       return {
-        content: [{ type: "text", text: formatTracker(tracker, fields) }],
+        content: [{ type: "text", text: formatTracker(tracker, fields, items) }],
       };
     },
   );

@@ -24,17 +24,17 @@ describe("search_items", () => {
     const text = formatItemList(result);
 
     expect(text).toContain("## Items");
+    expect(text).toContain("2 total");
     expect(text).toContain("Login button does not respond");
     expect(text).toContain("Another bug");
-    expect(text).toContain("2 total");
   });
 });
 
 describe("list_tracker_items", () => {
   it("returns formatted item list", async () => {
     const client = makeClient();
-    const result = await client.listTrackerItems(100, 1, 25);
-    const text = formatItemList(result);
+    const { items } = await client.listTrackerItems(100, 1, 25);
+    const text = formatItemList(items);
 
     expect(text).toContain("## Items");
     expect(text).toContain("500");

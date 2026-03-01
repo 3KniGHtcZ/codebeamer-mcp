@@ -24,23 +24,28 @@ describe("list_trackers", () => {
     const text = formatTrackerList(result);
 
     expect(text).toContain("## Trackers");
+    expect(text).toContain("1 total");
     expect(text).toContain("Bug Tracker");
     expect(text).toContain("100");
   });
 });
 
 describe("get_tracker", () => {
-  it("returns formatted tracker with fields", async () => {
+  it("returns formatted tracker with fields and items", async () => {
     const client = makeClient();
-    const [tracker, fields] = await Promise.all([
+    const [tracker, fields, { items }] = await Promise.all([
       client.getTracker(100),
       client.getTrackerFields(100),
+      client.listTrackerItems(100, 1, 100),
     ]);
-    const text = formatTracker(tracker, fields);
+    const text = formatTracker(tracker, fields, items);
 
     expect(text).toContain("Bug Tracker");
     expect(text).toContain("Summary");
     expect(text).toContain("Description");
     expect(text).toContain("TextFieldValue");
+    expect(text).toContain("### Items");
+    expect(text).toContain("Login button does not respond");
+    expect(text).toContain("Open");
   });
 });

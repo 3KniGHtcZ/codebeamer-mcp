@@ -39,7 +39,7 @@ export interface CbTrackerField {
 export interface CbItem {
   id: number;
   name: string;
-  description?: { markup?: string; value?: string };
+  description?: string | { markup?: string; value?: string };
   tracker?: CbReference;
   project?: CbReference;
   status?: CbReference;
@@ -61,9 +61,16 @@ export interface CbRelation {
   itemRevision?: { id: number; name: string; version?: number };
 }
 
+export interface CbItemRelationsPage {
+  outgoingAssociations?: CbRelation[];
+  incomingAssociations?: CbRelation[];
+  upstreamReferences?: CbRelation[];
+  downstreamReferences?: CbRelation[];
+}
+
 export interface CbComment {
   id: number;
-  text?: { markup?: string; value?: string };
+  text?: string | { markup?: string; value?: string };
   createdAt?: string;
   createdBy?: CbReference;
 }
@@ -78,11 +85,26 @@ export interface CbUser {
   registryDate?: string;
 }
 
-export interface CbPage<T> {
-  total: number;
-  page: number;
-  pageSize: number;
-  items: T[];
+// --- Helpers ---
+
+// Codebeamer API returns either a plain array or a paginated object depending on the endpoint/version.
+// Known keys: "items" (query endpoint), "itemRefs" (tracker items endpoint in some versions).
+function toArray<T>(response: unknown): T[] {
+  if (Array.isArray(response)) return response as T[];
+  if (response && typeof response === "object") {
+    const obj = response as Record<string, unknown>;
+    if (Array.isArray(obj["items"])) return obj["items"] as T[];
+    if (Array.isArray(obj["itemRefs"])) return obj["itemRefs"] as T[];
+    // Generic fallback: find first array-valued key
+    for (const key of Object.keys(obj)) {
+      if (Array.isArray(obj[key])) {
+        console.error(`[codebeamer-mcp] Using response key "${key}" instead of "items"`);
+        return obj[key] as T[];
+      }
+    }
+    console.error("[codebeamer-mcp] No array found in response:", JSON.stringify(obj).slice(0, 300));
+  }
+  return [];
 }
 
 // --- Client ---
@@ -91,11 +113,12 @@ export class CodebeamerClient {
   constructor(private readonly http: HttpClient) {}
 
   // Projects
-  listProjects(page: number, pageSize: number): Promise<CbPage<CbProject>> {
-    return this.http.get("/projects", {
+  async listProjects(page: number, pageSize: number): Promise<CbProject[]> {
+    const raw = await this.http.get<unknown>("/projects", {
       params: { page, pageSize },
       resource: "projects",
     });
+    return toArray(raw);
   }
 
   getProject(id: number): Promise<CbProject> {
@@ -103,15 +126,16 @@ export class CodebeamerClient {
   }
 
   // Trackers
-  listTrackers(
+  async listTrackers(
     projectId: number,
     page: number,
     pageSize: number,
-  ): Promise<CbPage<CbTracker>> {
-    return this.http.get(`/projects/${projectId}/trackers`, {
+  ): Promise<CbTracker[]> {
+    const raw = await this.http.get<unknown>(`/projects/${projectId}/trackers`, {
       params: { page, pageSize },
       resource: `trackers for project ${projectId}`,
     });
+    return toArray(raw);
   }
 
   getTracker(id: number): Promise<CbTracker> {
@@ -129,39 +153,65 @@ export class CodebeamerClient {
     return this.http.get(`/items/${id}`, { resource: `item ${id}` });
   }
 
-  listTrackerItems(
+  async listTrackerItems(
     trackerId: number,
     page: number,
     pageSize: number,
-  ): Promise<CbPage<CbItem>> {
-    return this.http.get(`/trackers/${trackerId}/items`, {
-      params: { page, pageSize },
+  ): Promise<{ items: CbItem[]; debug?: string }> {
+    const raw = await this.http.get<unknown>("/items/query", {
+      params: { queryString: `tracker.id IN (${trackerId})`, page, pageSize },
       resource: `items for tracker ${trackerId}`,
     });
+    const items = toArray<CbItem>(raw);
+    if (items.length > 0) return { items };
+
+    // Items empty — also try the direct endpoint so we can show raw debug info
+    let rawDirect: unknown;
+    try {
+      rawDirect = await this.http.get<unknown>(`/trackers/${trackerId}/items`, {
+        params: { page, pageSize },
+        resource: `items for tracker ${trackerId} (direct)`,
+      });
+    } catch {
+      rawDirect = null;
+    }
+    const rawObj = raw as Record<string, unknown> | null;
+    const directObj = rawDirect as Record<string, unknown> | null;
+    const queryTotal = rawObj?.["total"] ?? "?";
+    const directTotal = directObj?.["total"] ?? "?";
+    const directItems = toArray<CbItem>(rawDirect);
+    const debug =
+      `API vrátilo total=${queryTotal} pro cbQL query a total=${directTotal} pro přímý endpoint.\n` +
+      `Pokud je total=0, Codebeamer říká že tam žádné itemy nejsou (špatný tracker ID, chybí oprávnění nebo prázdný tracker).\n` +
+      `query: ${JSON.stringify(raw).slice(0, 300)}\n` +
+      `direct: ${JSON.stringify(rawDirect).slice(0, 300)}`;
+    return { items: directItems, debug };
   }
 
-  searchItems(
+  async searchItems(
     queryString: string,
     page: number,
     pageSize: number,
-  ): Promise<CbPage<CbItem>> {
-    return this.http.get("/items/query", {
+  ): Promise<CbItem[]> {
+    const raw = await this.http.get<unknown>("/items/query", {
       params: { queryString, page, pageSize },
       resource: "item query",
     });
+    return toArray(raw);
   }
 
   // Item details
-  getItemRelations(id: number): Promise<CbRelation[]> {
+  getItemRelations(id: number): Promise<CbItemRelationsPage> {
     return this.http.get(`/items/${id}/relations`, {
       resource: `relations for item ${id}`,
     });
   }
 
-  getItemComments(id: number): Promise<CbComment[]> {
-    return this.http.get(`/items/${id}/comments`, {
+  async getItemComments(id: number): Promise<CbComment[]> {
+    const raw = await this.http.get<unknown>(`/items/${id}/comments`, {
       resource: `comments for item ${id}`,
     });
+    return toArray(raw);
   }
 
   // Users
