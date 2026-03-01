@@ -5,7 +5,7 @@
       "command": "node",
       "args": ["dist/index.js"],
       "env": {
-        "CB_URL": "https://your-instance.example.com",
+        "CB_URL": "https://your-instance.example.com/cb/api",
         "CB_USERNAME": "your_username",
         "CB_PASSWORD": "your_password"
       }
