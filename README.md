@@ -2,7 +2,7 @@
 
 A read-only MCP (Model Context Protocol) server for Codebeamer ALM. Allows Claude and other MCP clients to read projects, trackers, and items from Codebeamer using natural language.
 
-## Tools (10)
+## Tools (11)
 
 | Tool | Description |
 |---|---|
@@ -13,7 +13,8 @@ A read-only MCP (Model Context Protocol) server for Codebeamer ALM. Allows Claud
 | `list_tracker_items` | List items in a tracker |
 | `search_items` | Full-text / cbQL search |
 | `get_item` | Get item details |
-| `get_item_relations` | Get item relations |
+| `get_item_relations` | Get outgoing/incoming associations (depends on, blocks, …) |
+| `get_item_references` | Get upstream/downstream traceability references (derived from, covers, …) |
 | `get_item_comments` | Get item comments |
 | `get_user` | Get user details |
 
@@ -36,14 +37,14 @@ npm run build
 
 **Option A – environment variables** (recommended):
 ```bash
-export CB_URL=https://codebeamer.yourcompany.com
+export CB_URL=https://your-instance.example.com
 export CB_USERNAME=your_username
 export CB_PASSWORD=your_password
 ```
 
 **Option B – `.env` file** (local development):
 ```
-CB_URL=https://codebeamer.yourcompany.com
+CB_URL=https://your-instance.example.com
 CB_USERNAME=your_username
 CB_PASSWORD=your_password
 ```
@@ -58,9 +59,9 @@ Edit `.mcp.json` in the project root:
     "codebeamer": {
       "type": "stdio",
       "command": "node",
-      "args": ["/absolute/path/to/codebeamer-mcp/dist/index.js"],
+      "args": ["dist/index.js"],
       "env": {
-        "CB_URL": "https://codebeamer.yourcompany.com",
+        "CB_URL": "https://your-instance.example.com",
         "CB_USERNAME": "your_username",
         "CB_PASSWORD": "your_password"
       }
