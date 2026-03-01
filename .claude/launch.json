@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mock-api",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["mock-server.mjs"],
+      "port": 3001
+    },
+    {
+      "name": "mcp-inspector",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "CB_URL=http://localhost:3001 CB_USERNAME=mock CB_PASSWORD=mock npx @modelcontextprotocol/inspector node dist/index.js"],
+      "port": 6274
+    }
+  ]
+}
