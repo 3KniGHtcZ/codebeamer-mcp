@@ -1,56 +1,56 @@
 # codebeamer-mcp
 
-Read-only MCP (Model Context Protocol) server pro Codebeamer ALM. Umožňuje Claude a dalším MCP klientům číst projekty, trackery a položky z Codebeamer přes přirozený jazyk.
+A read-only MCP (Model Context Protocol) server for Codebeamer ALM. Allows Claude and other MCP clients to read projects, trackers, and items from Codebeamer using natural language.
 
-## Nástroje (10)
+## Tools (10)
 
-| Nástroj | Popis |
+| Tool | Description |
 |---|---|
-| `list_projects` | Vypíše všechny projekty |
-| `get_project` | Detail projektu |
-| `list_trackers` | Trackery v projektu |
-| `get_tracker` | Detail trackeru |
-| `list_tracker_items` | Položky v trackeru |
-| `search_items` | Fulltextové/cbQL hledání |
-| `get_item` | Detail položky |
-| `get_item_relations` | Vazby položky |
-| `get_item_comments` | Komentáře k položce |
-| `get_user` | Detail uživatele |
+| `list_projects` | List all projects |
+| `get_project` | Get project details |
+| `list_trackers` | List trackers in a project |
+| `get_tracker` | Get tracker details |
+| `list_tracker_items` | List items in a tracker |
+| `search_items` | Full-text / cbQL search |
+| `get_item` | Get item details |
+| `get_item_relations` | Get item relations |
+| `get_item_comments` | Get item comments |
+| `get_user` | Get user details |
 
-## Instalace
+## Installation
 
-### Požadavky
+### Requirements
 - Node.js 18+
-- Přístup k Codebeamer instanci (URL, uživatelské jméno, heslo)
+- Access to a Codebeamer instance (URL, username, password)
 
-### 1. Klonování a build
+### 1. Clone and build
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/3KniGHtcZ/codebeamer-mcp.git
 cd codebeamer-mcp
 npm install
 npm run build
 ```
 
-### 2. Nastavení přihlašovacích údajů
+### 2. Configure credentials
 
-**Varianta A – proměnné prostředí** (doporučeno):
+**Option A – environment variables** (recommended):
 ```bash
-export CB_URL=https://codebeamer.vasefirma.cz
-export CB_USERNAME=vas_login
-export CB_PASSWORD=vase_heslo
+export CB_URL=https://codebeamer.yourcompany.com
+export CB_USERNAME=your_username
+export CB_PASSWORD=your_password
 ```
 
-**Varianta B – soubor `.env`** (lokální vývoj):
+**Option B – `.env` file** (local development):
 ```
-CB_URL=https://codebeamer.vasefirma.cz
-CB_USERNAME=vas_login
-CB_PASSWORD=vase_heslo
+CB_URL=https://codebeamer.yourcompany.com
+CB_USERNAME=your_username
+CB_PASSWORD=your_password
 ```
 
-### 3. Připojení k Claude Code
+### 3. Connect to Claude Code
 
-Upravte `.mcp.json` v kořeni projektu:
+Edit `.mcp.json` in the project root:
 
 ```json
 {
@@ -58,43 +58,41 @@ Upravte `.mcp.json` v kořeni projektu:
     "codebeamer": {
       "type": "stdio",
       "command": "node",
-      "args": ["dist/index.js"],
+      "args": ["/absolute/path/to/codebeamer-mcp/dist/index.js"],
       "env": {
-        "CB_URL": "https://codebeamer.vasefirma.cz",
-        "CB_USERNAME": "vas_login",
-        "CB_PASSWORD": "vase_heslo"
+        "CB_URL": "https://codebeamer.yourcompany.com",
+        "CB_USERNAME": "your_username",
+        "CB_PASSWORD": "your_password"
       }
     }
   }
 }
 ```
 
-Nebo umístěte `.mcp.json` do jiného projektu, kde chcete Codebeamer používat, a upravte cestu v `args`:
-```json
-"args": ["/absolutni/cesta/k/codebeamer-mcp/dist/index.js"]
-```
+> ⚠️ **Never commit `.mcp.json` with real credentials** — it is listed in `.gitignore`.
+> Place it in the root of the project where you use Claude Code, or globally at `~/.claude/mcp.json`.
 
-## Vývoj a testování
+## Development & Testing
 
 ```bash
-# Spuštění testů (bez nutnosti reálného serveru)
+# Run tests (no real Codebeamer instance needed)
 npm test
 
-# Spuštění mock API serveru (port 3001)
+# Start the mock API server (port 3001)
 node mock-server.mjs
 
-# Interaktivní testování přes MCP Inspector
+# Interactive testing via MCP Inspector
 CB_URL=http://localhost:3001 CB_USERNAME=mock CB_PASSWORD=mock \
   npx @modelcontextprotocol/inspector node dist/index.js
 ```
 
-## Konfigurace
+## Configuration
 
-| Proměnná | Popis | Výchozí |
+| Variable | Description | Default |
 |---|---|---|
-| `CB_URL` | URL Codebeamer instance | _(povinné)_ |
-| `CB_USERNAME` | Přihlašovací jméno | _(povinné)_ |
-| `CB_PASSWORD` | Heslo | _(povinné)_ |
-| `CB_API_VERSION` | Verze API | `v3` |
-| `CB_TIMEOUT_MS` | Timeout požadavků (ms) | `30000` |
-| `CB_MAX_ITEMS` | Max. položek na stránku | `100` |
+| `CB_URL` | Codebeamer instance URL | _(required)_ |
+| `CB_USERNAME` | Login username | _(required)_ |
+| `CB_PASSWORD` | Password | _(required)_ |
+| `CB_API_VERSION` | API version | `v3` |
+| `CB_TIMEOUT_MS` | Request timeout (ms) | `30000` |
+| `CB_MAX_ITEMS` | Max items per page | `100` |
