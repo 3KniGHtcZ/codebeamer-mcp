@@ -21,45 +21,20 @@ A read-only MCP (Model Context Protocol) server for Codebeamer ALM. Allows Claud
 ## Installation
 
 ### Requirements
-- Node.js 18+
+- Node.js 20+
 - Access to a Codebeamer instance (URL, username, password)
 
-### 1. Clone and build
+### Quick Start (npm)
 
-```bash
-git clone https://github.com/3KniGHtcZ/codebeamer-mcp.git
-cd codebeamer-mcp
-npm install
-npm run build
-```
-
-### 2. Configure credentials
-
-**Option A – environment variables** (recommended):
-```bash
-export CB_URL=https://your-instance.example.com/cb/api
-export CB_USERNAME=your_username
-export CB_PASSWORD=your_password
-```
-
-**Option B – `.env` file** (local development):
-```
-CB_URL=https://your-instance.example.com/cb/api
-CB_USERNAME=your_username
-CB_PASSWORD=your_password
-```
-
-### 3. Connect to Claude Code
-
-Edit `.mcp.json` in the project root:
+No need to clone the repository. Add this to your `.mcp.json` (project root or `~/.claude/mcp.json` for global):
 
 ```json
 {
   "mcpServers": {
     "codebeamer": {
       "type": "stdio",
-      "command": "node",
-      "args": ["dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "codebeamer-mcp"],
       "env": {
         "CB_URL": "https://your-instance.example.com/cb/api",
         "CB_USERNAME": "your_username",
@@ -70,8 +45,42 @@ Edit `.mcp.json` in the project root:
 }
 ```
 
+That's it — `npx` downloads and runs the latest version automatically.
+
+#### Alternative: global install
+
+```bash
+npm install -g codebeamer-mcp
+```
+
+Then use `"command": "codebeamer-mcp"` instead of `npx` in the config above.
+
+#### Pinning a specific version
+
+```json
+"args": ["-y", "codebeamer-mcp@0.2.0"]
+```
+
+### Updates
+
+| Method | Update behavior |
+|---|---|
+| `npx -y codebeamer-mcp` | Always fetches the latest version |
+| `npm install -g codebeamer-mcp` | Stays on installed version. Run `npm update -g codebeamer-mcp` to update |
+| Pinned version (`@0.2.0`) | Never auto-updates; change the version string manually |
+
 > ⚠️ **Never commit `.mcp.json` with real credentials** — it is listed in `.gitignore`.
-> Place it in the root of the project where you use Claude Code, or globally at `~/.claude/mcp.json`.
+
+### From source (development)
+
+```bash
+git clone https://github.com/3KniGHtcZ/codebeamer-mcp.git
+cd codebeamer-mcp
+npm install
+npm run build
+```
+
+Then use `"command": "node"` with `"args": ["dist/index.js"]` in your `.mcp.json`.
 
 ## Development & Testing
 
