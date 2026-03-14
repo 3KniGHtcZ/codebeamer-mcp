@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { loadConfig } from "./config.js";
@@ -13,11 +14,14 @@ import {
   registerUserTools,
 } from "./tools/index.js";
 
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json") as { version: string };
+
 const config = loadConfig();
 
 const server = new McpServer({
   name: "codebeamer",
-  version: "0.1.0",
+  version,
 });
 
 const httpClient = new HttpClient(config);

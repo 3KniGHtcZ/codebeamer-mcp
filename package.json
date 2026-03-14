@@ -2,12 +2,34 @@
   "name": "codebeamer-mcp",
   "version": "0.1.0",
   "description": "Read-only MCP server for Codebeamer ALM",
+  "license": "MIT",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "bin": {
     "codebeamer-mcp": "dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "package.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/3KniGHtcZ/codebeamer-mcp.git"
+  },
+  "homepage": "https://github.com/3KniGHtcZ/codebeamer-mcp#readme",
+  "keywords": [
+    "mcp",
+    "codebeamer",
+    "alm",
+    "model-context-protocol",
+    "claude"
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean --outDir dist",
