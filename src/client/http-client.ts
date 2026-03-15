@@ -6,6 +6,10 @@ export interface RequestOptions {
   resource?: string;
 }
 
+export interface BodyRequestOptions extends RequestOptions {
+  body?: unknown;
+}
+
 export class HttpClient {
   private readonly authHeader: string;
 
@@ -17,6 +21,22 @@ export class HttpClient {
   }
 
   async get<T>(path: string, options: RequestOptions = {}): Promise<T> {
+    return this.request<T>("GET", path, options);
+  }
+
+  async post<T>(path: string, options: BodyRequestOptions = {}): Promise<T> {
+    return this.request<T>("POST", path, options);
+  }
+
+  async put<T>(path: string, options: BodyRequestOptions = {}): Promise<T> {
+    return this.request<T>("PUT", path, options);
+  }
+
+  private async request<T>(
+    method: string,
+    path: string,
+    options: BodyRequestOptions = {},
+  ): Promise<T> {
     const url = new URL(`${this.config.baseUrl}${path}`);
 
     if (options.params) {
@@ -27,14 +47,20 @@ export class HttpClient {
       }
     }
 
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        Authorization: this.authHeader,
-        Accept: "application/json",
-        "User-Agent": "codebeamer-mcp/0.1.0",
-      },
-    });
+    const headers: Record<string, string> = {
+      Authorization: this.authHeader,
+      Accept: "application/json",
+      "User-Agent": "codebeamer-mcp/0.1.0",
+    };
+
+    const init: RequestInit = { method, headers };
+
+    if (options.body !== undefined) {
+      headers["Content-Type"] = "application/json";
+      init.body = JSON.stringify(options.body);
+    }
+
+    const response = await fetch(url.toString(), init);
 
     if (!response.ok) {
       const text = await response.text();

@@ -12,6 +12,9 @@ import {
   registerItemTools,
   registerItemDetailTools,
   registerUserTools,
+  registerItemWriteTools,
+  registerCommentWriteTools,
+  registerAssociationWriteTools,
 } from "./tools/index.js";
 
 const require = createRequire(import.meta.url);
@@ -32,6 +35,9 @@ registerTrackerTools(server, client);
 registerItemTools(server, client);
 registerItemDetailTools(server, client);
 registerUserTools(server, client);
+registerItemWriteTools(server, client);
+registerCommentWriteTools(server, client);
+registerAssociationWriteTools(server, client);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

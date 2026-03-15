@@ -85,6 +85,48 @@ export interface CbUser {
   registryDate?: string;
 }
 
+// --- Request types for write operations ---
+
+export interface CbCreateItemRequest {
+  name: string;
+  description?: string;
+  status?: { id: number };
+  priority?: { id: number };
+  assignedTo?: Array<{ id: number }>;
+  storyPoints?: number;
+  customFields?: Array<{ fieldId: number; type: string; value: unknown }>;
+}
+
+export interface CbUpdateItemRequest {
+  name?: string;
+  description?: string;
+  status?: { id: number };
+  priority?: { id: number };
+  assignedTo?: Array<{ id: number }>;
+  storyPoints?: number;
+  customFields?: Array<{ fieldId: number; type: string; value: unknown }>;
+}
+
+export interface CbCreateCommentRequest {
+  comment: string;
+  commentFormat?: string;
+}
+
+export interface CbCreateAssociationRequest {
+  from: { id: number };
+  to: { id: number };
+  type: { id: number };
+  description?: string;
+}
+
+export interface CbAssociation {
+  id: number;
+  from?: CbReference;
+  to?: CbReference;
+  type?: CbReference;
+  description?: string;
+}
+
 // --- Helpers ---
 
 // Codebeamer API returns either a plain array or a paginated object depending on the endpoint/version.
@@ -217,5 +259,35 @@ export class CodebeamerClient {
   // Users
   getUser(id: number): Promise<CbUser> {
     return this.http.get(`/users/${id}`, { resource: `user ${id}` });
+  }
+
+  // --- Write operations ---
+
+  createItem(trackerId: number, data: CbCreateItemRequest): Promise<CbItem> {
+    return this.http.post(`/trackers/${trackerId}/items`, {
+      body: data,
+      resource: `create item in tracker ${trackerId}`,
+    });
+  }
+
+  updateItem(itemId: number, data: CbUpdateItemRequest): Promise<CbItem> {
+    return this.http.put(`/items/${itemId}`, {
+      body: data,
+      resource: `update item ${itemId}`,
+    });
+  }
+
+  addComment(itemId: number, data: CbCreateCommentRequest): Promise<CbComment> {
+    return this.http.post(`/items/${itemId}/comments`, {
+      body: data,
+      resource: `add comment to item ${itemId}`,
+    });
+  }
+
+  createAssociation(data: CbCreateAssociationRequest): Promise<CbAssociation> {
+    return this.http.post("/associations", {
+      body: data,
+      resource: "create association",
+    });
   }
 }

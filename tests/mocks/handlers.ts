@@ -57,4 +57,62 @@ export const handlers = [
   http.get(`${BASE}/users/:id`, ({ params }) =>
     HttpResponse.json(makeUser({ id: Number(params.id) })),
   ),
+
+  // --- Write operations ---
+
+  // Create item
+  http.post(`${BASE}/trackers/:trackerId/items`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json(
+      makeItem({
+        id: 600,
+        name: body.name as string,
+        description: body.description as string | undefined,
+        status: body.status as { id: number; name: string } | undefined,
+        priority: body.priority as { id: number; name: string } | undefined,
+        storyPoints: body.storyPoints as number | undefined,
+      }),
+      { status: 201 },
+    );
+  }),
+
+  // Update item
+  http.put(`${BASE}/items/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json(
+      makeItem({
+        id: Number(params.id),
+        ...(body.name != null && { name: body.name as string }),
+        ...(body.status != null && { status: body.status as { id: number; name: string } }),
+      }),
+    );
+  }),
+
+  // Add comment
+  http.post(`${BASE}/items/:itemId/comments`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json(
+      makeComment({
+        id: 350,
+        text: body.comment as string,
+        createdBy: { id: 5, name: "john.doe" },
+      }),
+      { status: 201 },
+    );
+  }),
+
+  // Create association
+  http.post(`${BASE}/associations`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json(
+      {
+        id: 400,
+        from: body.from,
+        to: body.to,
+        type: { ...(body.type as Record<string, unknown>), name: "depends on" },
+        description: body.description ?? null,
+      },
+      { status: 201 },
+    );
+  }),
 ];

@@ -47,6 +47,16 @@ export class CbRateLimitError extends CbError {
   }
 }
 
+export class CbConflictError extends CbError {
+  constructor(resource: string) {
+    super(
+      `Conflict: ${resource} was modified by another user. Re-fetch and retry.`,
+      409,
+    );
+    this.name = "CbConflictError";
+  }
+}
+
 export function mapHttpError(
   status: number,
   body: unknown,
@@ -59,6 +69,8 @@ export function mapHttpError(
       return new CbForbiddenError();
     case 404:
       return new CbNotFoundError(resource ?? "resource");
+    case 409:
+      return new CbConflictError(resource ?? "resource");
     case 429:
       return new CbRateLimitError();
     case 400:
