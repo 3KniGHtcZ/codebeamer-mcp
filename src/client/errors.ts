@@ -11,7 +11,7 @@ export class CbError extends Error {
 
 export class CbAuthError extends CbError {
   constructor() {
-    super("Authentication failed. Check CB_USERNAME and CB_PASSWORD.", 401);
+    super("Authentication failed. Check CB_API_KEY or CB_USERNAME/CB_PASSWORD.", 401);
     this.name = "CbAuthError";
   }
 }

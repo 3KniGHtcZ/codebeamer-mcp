@@ -13,11 +13,10 @@ import {
 
 const BASE = "https://test-cb.example.com/v3";
 
-function makeClient() {
+function makeClient(authHeader?: string) {
   return new HttpClient({
     baseUrl: BASE,
-    username: "testuser",
-    password: "testpass",
+    authHeader: authHeader ?? `Basic ${Buffer.from("testuser:testpass").toString("base64")}`,
   });
 }
 
@@ -36,6 +35,21 @@ describe("HttpClient", () => {
 
     const expected = `Basic ${Buffer.from("testuser:testpass").toString("base64")}`;
     expect(receivedAuth).toBe(expected);
+  });
+
+  it("sends Bearer token header", async () => {
+    let receivedAuth = "";
+    mockServer.use(
+      http.get(`${BASE}/test-bearer`, ({ request }) => {
+        receivedAuth = request.headers.get("Authorization") ?? "";
+        return HttpResponse.json({ ok: true });
+      }),
+    );
+
+    const client = makeClient("Bearer my-oauth2-token");
+    await client.get("/test-bearer");
+
+    expect(receivedAuth).toBe("Bearer my-oauth2-token");
   });
 
   it("appends query params", async () => {

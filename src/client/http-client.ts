@@ -7,14 +7,7 @@ export interface RequestOptions {
 }
 
 export class HttpClient {
-  private readonly authHeader: string;
-
-  constructor(private readonly config: Config) {
-    const encoded = Buffer.from(
-      `${config.username}:${config.password}`,
-    ).toString("base64");
-    this.authHeader = `Basic ${encoded}`;
-  }
+  constructor(private readonly config: Config) {}
 
   async get<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const url = new URL(`${this.config.baseUrl}${path}`);
@@ -30,7 +23,7 @@ export class HttpClient {
     const response = await fetch(url.toString(), {
       method: "GET",
       headers: {
-        Authorization: this.authHeader,
+        Authorization: this.config.authHeader,
         Accept: "application/json",
         "User-Agent": "codebeamer-mcp/0.1.0",
       },

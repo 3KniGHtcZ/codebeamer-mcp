@@ -22,11 +22,13 @@ A read-only MCP (Model Context Protocol) server for Codebeamer ALM. Allows Claud
 
 ### Requirements
 - Node.js 20+
-- Access to a Codebeamer instance (URL, username, password)
+- Access to a Codebeamer instance (URL + credentials or API token)
 
 ### Quick Start (npm)
 
 No need to clone the repository. Add this to your `.mcp.json` (project root or `~/.claude/mcp.json` for global):
+
+**Option A — Username & password (Basic Auth):**
 
 ```json
 {
@@ -45,7 +47,25 @@ No need to clone the repository. Add this to your `.mcp.json` (project root or `
 }
 ```
 
-That's it — `npx` downloads and runs the latest version automatically.
+**Option B — Bearer token (OpenID Connect / OAuth2):**
+
+```json
+{
+  "mcpServers": {
+    "codebeamer": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "codebeamer-mcp"],
+      "env": {
+        "CB_URL": "https://your-instance.example.com/cb/api",
+        "CB_API_KEY": "your_oauth2_access_token"
+      }
+    }
+  }
+}
+```
+
+That's it — `npx` downloads and runs the latest version automatically. If `CB_API_KEY` is set, it takes precedence over username/password.
 
 #### Alternative: global install
 
@@ -101,8 +121,9 @@ CB_URL=http://localhost:3001 CB_USERNAME=mock CB_PASSWORD=mock \
 | Variable | Description | Default |
 |---|---|---|
 | `CB_URL` | Codebeamer API URL, e.g. `https://your-instance.example.com/cb/api` (the server appends `/v3` automatically) | _(required)_ |
-| `CB_USERNAME` | Login username | _(required)_ |
-| `CB_PASSWORD` | Password | _(required)_ |
+| `CB_API_KEY` | OAuth2 / OpenID Connect Bearer token. When set, `CB_USERNAME` and `CB_PASSWORD` are not needed | — |
+| `CB_USERNAME` | Login username (required if `CB_API_KEY` is not set) | — |
+| `CB_PASSWORD` | Password (required if `CB_API_KEY` is not set) | — |
 | `CB_API_VERSION` | API version | `v3` |
 | `CB_TIMEOUT_MS` | Request timeout (ms) | `30000` |
 | `CB_MAX_ITEMS` | Max items per page | `100` |

@@ -11,16 +11,20 @@ function requireEnv(name: string): string {
 
 export interface Config {
   baseUrl: string;
-  username: string;
-  password: string;
+  authHeader: string;
 }
 
 export function loadConfig(): Config {
   const host = requireEnv("CB_URL");
-  const username = requireEnv("CB_USERNAME");
-  const password = requireEnv("CB_PASSWORD");
-
   const baseUrl = `${host.replace(/\/$/, "")}/v3`;
 
-  return { baseUrl, username, password };
+  const apiKey = process.env.CB_API_KEY;
+  if (apiKey) {
+    return { baseUrl, authHeader: `Bearer ${apiKey}` };
+  }
+
+  const username = requireEnv("CB_USERNAME");
+  const password = requireEnv("CB_PASSWORD");
+  const encoded = Buffer.from(`${username}:${password}`).toString("base64");
+  return { baseUrl, authHeader: `Basic ${encoded}` };
 }

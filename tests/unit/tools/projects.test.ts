@@ -8,8 +8,7 @@ const BASE = "https://test-cb.example.com/v3";
 function makeClient() {
   const http = new HttpClient({
     baseUrl: BASE,
-    username: "testuser",
-    password: "testpass",
+    authHeader: `Basic ${Buffer.from("testuser:testpass").toString("base64")}`,
   });
   return new CodebeamerClient(http);
 }
