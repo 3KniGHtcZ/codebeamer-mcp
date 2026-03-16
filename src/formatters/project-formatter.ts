@@ -7,7 +7,7 @@ export function formatProjectList(projects: CbProject[]): string {
 
   const rows = projects.map(
     (p) =>
-      `| ${p.id} | ${p.name} | ${p.keyName} | ${p.closed ? "Closed" : "Open"} |`,
+      `| ${p.id} | ${p.name} | ${p.keyName ?? "-"} | ${p.closed ? "Closed" : "Open"} |`,
   );
 
   return [
@@ -23,7 +23,7 @@ export function formatProject(project: CbProject): string {
     `## ${project.name}`,
     "",
     `- **ID:** ${project.id}`,
-    `- **Key:** ${project.keyName}`,
+    `- **Key:** ${project.keyName ?? "-"}`,
     `- **Status:** ${project.closed ? "Closed" : "Open"}`,
   ];
 

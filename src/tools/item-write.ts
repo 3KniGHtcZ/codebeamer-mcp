@@ -52,17 +52,40 @@ export function registerItemWriteTools(
           .min(0)
           .optional()
           .describe("Story points estimate"),
+        isFolder: z
+          .boolean()
+          .optional()
+          .describe("Set to true to create a folder item instead of a regular item"),
+        itemTypeName: z
+          .string()
+          .optional()
+          .describe("Item type name as configured in the tracker (e.g. 'Folder', 'Informative'). Overrides isFolder."),
+        parentId: z
+          .number()
+          .int()
+          .positive()
+          .optional()
+          .describe("Parent item ID to nest this item inside (e.g. a folder)"),
       },
     },
-    async ({ trackerId, name, description, statusId, priorityId, assignedToIds, storyPoints }) => {
+    async ({ trackerId, name, description, statusId, priorityId, assignedToIds, storyPoints, isFolder, itemTypeName, parentId }) => {
       const data: CbCreateItemRequest = { name };
+      const desiredType = itemTypeName ?? (isFolder ? "Folder" : undefined);
+      if (desiredType) {
+        const schema = await client.getTrackerSchema(trackerId);
+        const typeField = schema.find((f) => f.trackerItemField === "categories" || f.legacyRestName === "type");
+        const option = typeField?.options?.find((o) => o.name.toLowerCase() === desiredType.toLowerCase());
+        if (option) {
+          data.categories = [{ id: option.id, type: "ChoiceOptionReference" }];
+        }
+      }
       if (description !== undefined) data.description = description;
       if (statusId !== undefined) data.status = { id: statusId };
       if (priorityId !== undefined) data.priority = { id: priorityId };
       if (assignedToIds !== undefined) data.assignedTo = assignedToIds.map((id) => ({ id }));
       if (storyPoints !== undefined) data.storyPoints = storyPoints;
 
-      const item = await client.createItem(trackerId, data);
+      const item = await client.createItem(trackerId, data, parentId);
       return { content: [{ type: "text", text: formatItem(item) }] };
     },
   );

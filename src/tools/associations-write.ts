@@ -55,4 +55,36 @@ export function registerAssociationWriteTools(
       return { content: [{ type: "text", text }] };
     },
   );
+
+  server.registerTool(
+    "create_reference",
+    {
+      title: "Create Downstream Reference",
+      description:
+        "Add a downstream reference from one Codebeamer item to another. " +
+        "Downstream references represent derivation/traceability links (e.g. a requirement derived from another). " +
+        "The 'from' item gets the downstream reference pointing to the 'to' item.",
+      inputSchema: {
+        fromItemId: z
+          .number()
+          .int()
+          .positive()
+          .describe("Item ID that will have the downstream reference added"),
+        toItemId: z
+          .number()
+          .int()
+          .positive()
+          .describe("Item ID to reference as downstream"),
+      },
+    },
+    async ({ fromItemId, toItemId }) => {
+      await client.createDownstreamReference(fromItemId, toItemId);
+      const text =
+        `**Downstream reference created**\n\n` +
+        `| Field | Value |\n|---|---|\n` +
+        `| Upstream (from) | #${fromItemId} |\n` +
+        `| Downstream (to) | #${toItemId} |`;
+      return { content: [{ type: "text", text }] };
+    },
+  );
 }

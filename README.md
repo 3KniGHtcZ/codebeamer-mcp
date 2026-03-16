@@ -1,8 +1,10 @@
 # codebeamer-mcp
 
-A read-only MCP (Model Context Protocol) server for Codebeamer ALM. Allows Claude and other MCP clients to read projects, trackers, and items from Codebeamer using natural language.
+An MCP (Model Context Protocol) server for Codebeamer ALM. Allows Claude and other MCP clients to read and write projects, trackers, and items in Codebeamer using natural language.
 
-## Tools (11)
+## Tools (17)
+
+### Read
 
 | Tool | Description |
 |---|---|
@@ -17,6 +19,17 @@ A read-only MCP (Model Context Protocol) server for Codebeamer ALM. Allows Claud
 | `get_item_references` | Get upstream/downstream traceability references (derived from, covers, …) |
 | `get_item_comments` | Get item comments |
 | `get_user` | Get user details |
+
+### Write
+
+| Tool | Description |
+|---|---|
+| `create_item` | Create a new item in a tracker. Supports folders, item type, and parent nesting |
+| `update_item` | Update an existing item (name, description, status, priority, assignee, custom fields) |
+| `add_comment` | Add a comment to an item |
+| `create_association` | Create an association between two items (e.g. depends on, blocks) |
+| `create_reference` | Add a downstream traceability reference between two items |
+| `create_harm` | Create a harm entry in an RM Harms List tracker with IMDRF code and severity (1–5) |
 
 ## Installation
 

@@ -50,7 +50,10 @@ export function formatItem(item: CbItem): string {
   if (item.customFields && item.customFields.length > 0) {
     lines.push("", "### Custom Fields", "");
     for (const field of item.customFields) {
-      lines.push(`- **${field.name}:** ${formatFieldValue(field.value)}`);
+      const displayValue = field.values && field.values.length > 0
+        ? field.values.map((v) => v.name ? `[${v.id}] ${v.name}` : String(v.id)).join(", ")
+        : formatFieldValue(field.value);
+      lines.push(`- **${field.name}:** ${displayValue}`);
     }
   }
 

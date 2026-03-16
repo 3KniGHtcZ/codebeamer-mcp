@@ -11,7 +11,7 @@ export interface CbReference {
 export interface CbProject {
   id: number;
   name: string;
-  keyName: string;
+  keyName?: string;
   description?: string;
   category?: string;
   closed?: boolean;
@@ -36,6 +36,20 @@ export interface CbTrackerField {
   hidden?: boolean;
 }
 
+export interface CbTrackerSchemaOption {
+  id: number;
+  name: string;
+}
+
+export interface CbTrackerSchemaField {
+  id: number;
+  name: string;
+  type?: string;
+  trackerItemField?: string;
+  legacyRestName?: string;
+  options?: CbTrackerSchemaOption[];
+}
+
 export interface CbItem {
   id: number;
   name: string;
@@ -52,7 +66,7 @@ export interface CbItem {
   createdBy?: CbReference;
   modifiedBy?: CbReference;
   storyPoints?: number;
-  customFields?: Array<{ fieldId: number; name: string; value: unknown }>;
+  customFields?: Array<{ fieldId: number; name: string; value?: unknown; values?: Array<{ id: number; name?: string; type?: string }> }>;
 }
 
 export interface CbRelation {
@@ -90,6 +104,7 @@ export interface CbUser {
 export interface CbCreateItemRequest {
   name: string;
   description?: string;
+  categories?: Array<{ id: number; type: string }>;
   status?: { id: number };
   priority?: { id: number };
   assignedTo?: Array<{ id: number }>;
@@ -100,11 +115,19 @@ export interface CbCreateItemRequest {
 export interface CbUpdateItemRequest {
   name?: string;
   description?: string;
-  status?: { id: number };
+  status?: { id: number; type?: string };
   priority?: { id: number };
   assignedTo?: Array<{ id: number }>;
   storyPoints?: number;
-  customFields?: Array<{ fieldId: number; type: string; value: unknown }>;
+  customFields?: Array<{ fieldId: number; type: string; values?: Array<{ id: number; type: string }>; value?: unknown }>;
+}
+
+export interface CbEditableField {
+  fieldId: number;
+  name: string;
+  values?: Array<{ id: number; name?: string; type?: string }>;
+  value?: unknown;
+  type?: string;
 }
 
 export interface CbCreateCommentRequest {
@@ -190,6 +213,12 @@ export class CodebeamerClient {
     });
   }
 
+  getTrackerSchema(id: number): Promise<CbTrackerSchemaField[]> {
+    return this.http.get(`/trackers/${id}/schema`, {
+      resource: `schema for tracker ${id}`,
+    });
+  }
+
   // Items
   getItem(id: number): Promise<CbItem> {
     return this.http.get(`/items/${id}`, { resource: `item ${id}` });
@@ -263,8 +292,9 @@ export class CodebeamerClient {
 
   // --- Write operations ---
 
-  createItem(trackerId: number, data: CbCreateItemRequest): Promise<CbItem> {
+  createItem(trackerId: number, data: CbCreateItemRequest, parentId?: number): Promise<CbItem> {
     return this.http.post(`/trackers/${trackerId}/items`, {
+      params: parentId !== undefined ? { parentItemId: parentId } : undefined,
       body: data,
       resource: `create item in tracker ${trackerId}`,
     });
@@ -288,6 +318,52 @@ export class CodebeamerClient {
     return this.http.post("/associations", {
       body: data,
       resource: "create association",
+    });
+  }
+
+  async getItemEditableFields(id: number): Promise<CbEditableField[]> {
+    const raw = await this.http.get<{ editableFields?: CbEditableField[] }>(
+      `/items/${id}/fields`,
+      { resource: `editable fields for item ${id}` },
+    );
+    return raw.editableFields ?? [];
+  }
+
+  async createDownstreamReference(fromItemId: number, toItemId: number): Promise<void> {
+    // Downstream reference is created by setting the "superordinateRequirement" field
+    // on the downstream (to) item to point to the upstream (from) item.
+    const toItem = await this.getItem(toItemId);
+    const trackerId = toItem.tracker?.id;
+    if (!trackerId) throw new Error(`Cannot determine tracker for item ${toItemId}`);
+
+    const schema = await this.getTrackerSchema(trackerId);
+    const superordinateField = schema.find(
+      (f) => f.legacyRestName === "superordinateRequirement",
+    );
+    if (!superordinateField) {
+      throw new Error(
+        `Tracker ${trackerId} has no superordinateRequirement field. Cannot create downstream reference.`,
+      );
+    }
+
+    const fields = await this.getItemEditableFields(toItemId);
+    const currentField = fields.find((f) => f.fieldId === superordinateField.id);
+    const existingValues = currentField?.values ?? [];
+    if (existingValues.some((v) => v.id === fromItemId)) return; // already linked
+
+    const newValues = [...existingValues, { id: fromItemId, type: "TrackerItemReference" }];
+
+    await this.http.put(`/items/${toItemId}/fields`, {
+      body: {
+        fieldValues: [
+          {
+            fieldId: superordinateField.id,
+            type: "ChoiceFieldValue",
+            values: newValues,
+          },
+        ],
+      },
+      resource: `add downstream reference from ${fromItemId} to ${toItemId}`,
     });
   }
 }
