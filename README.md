@@ -2,6 +2,8 @@
 
 An MCP (Model Context Protocol) server for Codebeamer ALM. Allows Claude and other MCP clients to read and write projects, trackers, and items in Codebeamer using natural language.
 
+[![codebeamer-mcp MCP server](https://glama.ai/mcp/servers/3KniGHtcZ/codebeamer-mcp/badges/card.svg)](https://glama.ai/mcp/servers/3KniGHtcZ/codebeamer-mcp)
+
 ## Tools (17)
 
 ### Read
