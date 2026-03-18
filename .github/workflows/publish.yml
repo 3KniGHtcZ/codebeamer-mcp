@@ -13,6 +13,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: master
 
       - name: Update package.json version from release tag
         run: |
@@ -26,7 +28,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add package.json package-lock.json
           git diff --cached --quiet || git commit -m "chore: bump version to ${GITHUB_REF_NAME#v}"
-          git push
+          git push origin master
 
       - uses: actions/setup-node@v4
         with:
