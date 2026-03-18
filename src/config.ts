@@ -13,6 +13,7 @@ export interface Config {
   baseUrl: string;
   username: string;
   password: string;
+  unsafeSsl: boolean;
 }
 
 export function loadConfig(): Config {
@@ -20,7 +21,9 @@ export function loadConfig(): Config {
   const username = requireEnv("CB_USERNAME");
   const password = requireEnv("CB_PASSWORD");
 
+  const unsafeSsl = process.env.CB_UNSAFE_SSL === "true";
+
   const baseUrl = `${host.replace(/\/$/, "")}/v3`;
 
-  return { baseUrl, username, password };
+  return { baseUrl, username, password, unsafeSsl };
 }

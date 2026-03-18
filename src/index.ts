@@ -23,6 +23,10 @@ const { version } = require("../package.json") as { version: string };
 
 const config = loadConfig();
 
+if (config.unsafeSsl) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
+
 const server = new McpServer({
   name: "codebeamer",
   version,

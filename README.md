@@ -231,6 +231,7 @@ CB_URL=http://localhost:3001 CB_USERNAME=mock CB_PASSWORD=mock \
 | `CB_URL` | Codebeamer API URL, e.g. `https://your-instance.example.com/cb/api` (the server appends `/v3` automatically) | _(required)_ |
 | `CB_USERNAME` | Login username | _(required)_ |
 | `CB_PASSWORD` | Password | _(required)_ |
+| `CB_UNSAFE_SSL` | Set to `true` to allow connections to servers with unverified/self-signed certificates | `false` |
 | `CB_API_VERSION` | API version | `v3` |
 | `CB_TIMEOUT_MS` | Request timeout (ms) | `30000` |
 | `CB_MAX_ITEMS` | Max items per page | `100` |
