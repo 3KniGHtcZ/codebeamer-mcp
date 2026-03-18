@@ -1,8 +1,9 @@
 name: Publish to npm
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   publish:
@@ -13,22 +14,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: master
-
-      - name: Update package.json version from release tag
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          echo "Setting version to $VERSION"
-          npm version "$VERSION" --no-git-tag-version
-
-      - name: Commit version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          git diff --cached --quiet || git commit -m "chore: bump version to ${GITHUB_REF_NAME#v}"
-          git push origin master
 
       - uses: actions/setup-node@v4
         with:
@@ -51,3 +36,8 @@ jobs:
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        run: gh release create "${{ github.ref_name }}" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
