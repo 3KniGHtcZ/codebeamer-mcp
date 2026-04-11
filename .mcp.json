@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "codebeamer": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["dist/index.js"],
+      "env": {
+        "CB_URL": "https://your-codebeamer-instance.example.com/cb/api",
+        "CB_USERNAME": "your-username",
+        "CB_PASSWORD": "your-password"
+      }
+    }
+  }
+}

@@ -1,7 +1,6 @@
 node_modules/
 dist/
 .env
-.mcp.json
 coverage/
 *.tsbuildinfo
 logs/
