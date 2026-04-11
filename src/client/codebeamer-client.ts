@@ -84,7 +84,8 @@ export interface CbItemRelationsPage {
 
 export interface CbComment {
   id: number;
-  text?: string | { markup?: string; value?: string };
+  comment?: string;
+  commentFormat?: string;
   createdAt?: string;
   createdBy?: CbReference;
 }
@@ -309,7 +310,10 @@ export class CodebeamerClient {
 
   addComment(itemId: number, data: CbCreateCommentRequest): Promise<CbComment> {
     return this.http.post(`/items/${itemId}/comments`, {
-      body: data,
+      formData: {
+        comment: data.comment,
+        ...(data.commentFormat ? { commentFormat: data.commentFormat } : {}),
+      },
       resource: `add comment to item ${itemId}`,
     });
   }

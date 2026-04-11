@@ -62,7 +62,8 @@ export function makeComment(
 ): CbComment {
   return {
     id: 300,
-    text: { markup: "wiki", value: "I can reproduce this on Chrome 120." },
+    comment: "I can reproduce this on Chrome 120.",
+    commentFormat: "PlainText",
     createdAt: "2024-03-02T11:00:00Z",
     createdBy: { id: 5, name: "john.doe" },
     ...overrides,

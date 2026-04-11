@@ -5,6 +5,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./tests/setup.ts"],
     environment: "node",
+    exclude: ["**/node_modules/**", "**/.claude/worktrees/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],

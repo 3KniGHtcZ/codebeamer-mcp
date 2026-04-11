@@ -125,7 +125,7 @@ export function formatComments(comments: CbComment[]): string {
 
   const formatted = comments.map(
     (c) =>
-      `### ${c.createdBy?.name ?? "?"} — ${c.createdAt ?? ""}\n\n${typeof c.text === "string" ? c.text : c.text?.value ?? c.text?.markup ?? "_empty_"}`,
+      `### ${c.createdBy?.name ?? "?"} — ${c.createdAt ?? ""}\n\n${c.comment ?? "_empty_"}`,
   );
 
   return [`## Comments (${comments.length})`, "", ...formatted].join("\n\n");

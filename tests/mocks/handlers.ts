@@ -46,7 +46,7 @@ export const handlers = [
   ),
 
   http.get(`${BASE}/items/:id/comments`, () =>
-    HttpResponse.json([makeComment(), makeComment({ id: 301, text: { value: "Fixed in v2.1" }, createdBy: { id: 2, name: "jane.smith" } })]),
+    HttpResponse.json([makeComment(), makeComment({ id: 301, comment: "Fixed in v2.1", createdBy: { id: 2, name: "jane.smith" } })]),
   ),
 
   http.get(`${BASE}/items/:id`, ({ params }) =>
@@ -88,13 +88,13 @@ export const handlers = [
     );
   }),
 
-  // Add comment
+  // Add comment (multipart/form-data)
   http.post(`${BASE}/items/:itemId/comments`, async ({ request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
+    const fd = await request.formData();
     return HttpResponse.json(
       makeComment({
         id: 350,
-        text: body.comment as string,
+        comment: fd.get("comment") as string,
         createdBy: { id: 5, name: "john.doe" },
       }),
       { status: 201 },

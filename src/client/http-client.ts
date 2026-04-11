@@ -8,6 +8,7 @@ export interface RequestOptions {
 
 export interface BodyRequestOptions extends RequestOptions {
   body?: unknown;
+  formData?: Record<string, string>;
 }
 
 export class HttpClient {
@@ -58,9 +59,29 @@ export class HttpClient {
     if (options.body !== undefined) {
       headers["Content-Type"] = "application/json";
       init.body = JSON.stringify(options.body);
+    } else if (options.formData !== undefined) {
+      const fd = new FormData();
+      for (const [key, value] of Object.entries(options.formData)) {
+        fd.append(key, value);
+      }
+      init.body = fd;
     }
 
-    const response = await fetch(url.toString(), init);
+    let response: Response;
+    try {
+      response = await fetch(url.toString(), init);
+    } catch (err) {
+      const cause = err instanceof Error ? err.message : String(err);
+      const nested =
+        err instanceof Error &&
+        err.cause instanceof Error
+          ? ` (${err.cause.message})`
+          : "";
+      throw new Error(
+        `Cannot connect to Codebeamer at ${this.config.baseUrl}. ` +
+          `Check that CB_URL is correct and the server is reachable. Cause: ${cause}${nested}`,
+      );
+    }
 
     if (!response.ok) {
       const text = await response.text();
