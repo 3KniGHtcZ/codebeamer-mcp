@@ -1,7 +1,7 @@
 import { http, HttpResponse } from "msw";
 import { makeProject } from "./fixtures/projects.js";
 import { makeTracker, makeTrackerField } from "./fixtures/trackers.js";
-import { makeItem, makeItemRelationsPage, makeComment } from "./fixtures/items.js";
+import { makeItem, makeItemRelationsPage, makeComment, makeTestCaseItem } from "./fixtures/items.js";
 import { makeUser } from "./fixtures/users.js";
 
 const BASE = "https://test-cb.example.com/v3";
@@ -49,9 +49,11 @@ export const handlers = [
     HttpResponse.json([makeComment(), makeComment({ id: 301, comment: "Fixed in v2.1", createdBy: { id: 2, name: "jane.smith" } })]),
   ),
 
-  http.get(`${BASE}/items/:id`, ({ params }) =>
-    HttpResponse.json(makeItem({ id: Number(params.id) })),
-  ),
+  http.get(`${BASE}/items/:id`, ({ params }) => {
+    const id = Number(params.id);
+    if (id === 700) return HttpResponse.json(makeTestCaseItem());
+    return HttpResponse.json(makeItem({ id }));
+  }),
 
   // Users
   http.get(`${BASE}/users/:id`, ({ params }) =>

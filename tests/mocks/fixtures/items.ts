@@ -3,6 +3,7 @@ import type {
   CbRelation,
   CbItemRelationsPage,
   CbComment,
+  CbTestStep,
 } from "../../../src/client/codebeamer-client.js";
 
 export function makeItem(overrides: Partial<CbItem> = {}): CbItem {
@@ -28,6 +29,47 @@ export function makeItem(overrides: Partial<CbItem> = {}): CbItem {
         fieldId: 1001,
         name: "Component",
         value: { id: 50, name: "Authentication" },
+      },
+    ],
+    ...overrides,
+  };
+}
+
+export function makeTestStep(overrides: Partial<CbTestStep> = {}): CbTestStep {
+  return {
+    index: 0,
+    actionDescription: "Navigate to the login page",
+    expectedResults: "Login form is displayed",
+    ...overrides,
+  };
+}
+
+export function makeTestCaseItem(overrides: Partial<CbItem> = {}): CbItem {
+  return {
+    id: 700,
+    name: "TC-01: Verify user can log in",
+    description: { markup: "wiki", value: "Verify that a registered user can log in successfully." },
+    tracker: { id: 200, name: "Test Cases" },
+    project: { id: 1, name: "Demo Project" },
+    status: { id: 20, name: "Draft" },
+    priority: { id: 2, name: "Normal" },
+    assignedTo: [{ id: 5, name: "john.doe" }],
+    categories: [],
+    createdAt: "2024-04-01T10:00:00Z",
+    updatedAt: "2024-04-05T12:00:00Z",
+    submittedAt: "2024-04-01T10:00:00Z",
+    createdBy: { id: 2, name: "jane.smith" },
+    modifiedBy: { id: 2, name: "jane.smith" },
+    customFields: [
+      {
+        fieldId: 2000,
+        name: "Test Steps",
+        type: "TestStepsFieldValue",
+        value: [
+          makeTestStep({ index: 0, actionDescription: "Navigate to the login page", expectedResults: "Login form is displayed" }),
+          makeTestStep({ index: 1, actionDescription: "Enter valid credentials and click Login", expectedResults: "User is redirected to the dashboard" }),
+          makeTestStep({ index: 2, actionDescription: "Verify username is shown in the header", expectedResults: "Header shows the logged-in user's name" }),
+        ],
       },
     ],
     ...overrides,

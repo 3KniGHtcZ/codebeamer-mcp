@@ -5,6 +5,7 @@ import {
   formatRelations,
   formatReferences,
   formatComments,
+  formatReviews,
 } from "../formatters/item-formatter.js";
 
 export function registerItemDetailTools(
@@ -71,6 +72,28 @@ export function registerItemDetailTools(
     async ({ itemId }) => {
       const comments = await client.getItemComments(itemId);
       return { content: [{ type: "text", text: formatComments(comments) }] };
+    },
+  );
+
+  server.registerTool(
+    "get_item_reviews",
+    {
+      title: "Get Item Reviews",
+      description:
+        "Get all Review Hub reviews for a Codebeamer tracker item. " +
+        "Shows the overall review result (APPROVED/REJECTED/UNDECIDED), " +
+        "individual reviewer votes, and review configuration (required approvals/rejections).",
+      inputSchema: {
+        itemId: z
+          .number()
+          .int()
+          .positive()
+          .describe("Numeric item ID"),
+      },
+    },
+    async ({ itemId }) => {
+      const reviews = await client.getItemReviews(itemId);
+      return { content: [{ type: "text", text: formatReviews(reviews) }] };
     },
   );
 }

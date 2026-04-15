@@ -50,6 +50,12 @@ export interface CbTrackerSchemaField {
   options?: CbTrackerSchemaOption[];
 }
 
+export interface CbTestStep {
+  index?: number;
+  actionDescription?: string;
+  expectedResults?: string;
+}
+
 export interface CbItem {
   id: number;
   name: string;
@@ -66,7 +72,7 @@ export interface CbItem {
   createdBy?: CbReference;
   modifiedBy?: CbReference;
   storyPoints?: number;
-  customFields?: Array<{ fieldId: number; name: string; value?: unknown; values?: Array<{ id: number; name?: string; type?: string }> }>;
+  customFields?: Array<{ fieldId: number; name: string; type?: string; value?: unknown; values?: Array<{ id: number; name?: string; type?: string }> }>;
 }
 
 export interface CbRelation {
@@ -98,6 +104,27 @@ export interface CbUser {
   email?: string;
   status?: string;
   registryDate?: string;
+}
+
+export interface CbTrackerItemReviewConfig {
+  requiredApprovals?: number;
+  requiredRejections?: number;
+  requiredSignature?: "NONE" | "PASSWORD" | "USERNAME_AND_PASSWORD";
+  roleRequired?: boolean;
+}
+
+export interface CbTrackerItemReviewVote {
+  user?: CbReference;
+  asRole?: CbReference;
+  decision?: "APPROVED" | "REJECTED" | "UNDECIDED";
+  reviewedAt?: string;
+}
+
+export interface CbTrackerItemReview {
+  config?: CbTrackerItemReviewConfig;
+  result?: "APPROVED" | "REJECTED" | "UNDECIDED";
+  reviewers?: CbTrackerItemReviewVote[];
+  trackerItem?: { id: number; name: string; version?: number };
 }
 
 // --- Request types for write operations ---
@@ -270,6 +297,14 @@ export class CodebeamerClient {
       resource: "item query",
     });
     return toArray(raw);
+  }
+
+  // Item reviews (Review Hub)
+  async getItemReviews(id: number): Promise<CbTrackerItemReview[]> {
+    const raw = await this.http.get<unknown>(`/items/${id}/reviews`, {
+      resource: `reviews for item ${id}`,
+    });
+    return Array.isArray(raw) ? raw : [];
   }
 
   // Item details

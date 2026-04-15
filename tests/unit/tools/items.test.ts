@@ -60,3 +60,42 @@ describe("get_item", () => {
     expect(text).toContain("Authentication");
   });
 });
+
+describe("get_item — test case with test steps", () => {
+  it("renders test steps as a numbered table", async () => {
+    const client = makeClient();
+    const item = await client.getItem(700);
+    const text = formatItem(item);
+
+    expect(text).toContain("[700] TC-01: Verify user can log in");
+    expect(text).toContain("### Test Steps");
+    expect(text).toContain("| # | Action | Expected Result |");
+    expect(text).toContain("Navigate to the login page");
+    expect(text).toContain("Login form is displayed");
+    expect(text).toContain("Enter valid credentials and click Login");
+    expect(text).toContain("User is redirected to the dashboard");
+    expect(text).toContain("Verify username is shown in the header");
+    expect(text).toContain("Header shows the logged-in user's name");
+  });
+
+  it("renders step numbers starting from 1", async () => {
+    const client = makeClient();
+    const item = await client.getItem(700);
+    const text = formatItem(item);
+
+    const lines = text.split("\n").filter((l) => l.startsWith("| ") && !l.startsWith("| #") && !l.startsWith("|---"));
+    expect(lines[0]).toMatch(/^\| 1 \|/);
+    expect(lines[1]).toMatch(/^\| 2 \|/);
+    expect(lines[2]).toMatch(/^\| 3 \|/);
+  });
+
+  it("does not render test step field under Custom Fields section", async () => {
+    const client = makeClient();
+    const item = await client.getItem(700);
+    const text = formatItem(item);
+
+    // TestStepsFieldValue must not appear as a plain "Custom Fields" bullet
+    const customFieldsSection = text.split("### Test Steps")[0];
+    expect(customFieldsSection).not.toContain("**Test Steps:**");
+  });
+});

@@ -2,6 +2,8 @@ import type {
   CbItem,
   CbItemRelationsPage,
   CbComment,
+  CbTrackerItemReview,
+  CbTestStep,
 } from "../client/codebeamer-client.js";
 
 export function formatItemList(items: CbItem[]): string {
@@ -48,12 +50,34 @@ export function formatItem(item: CbItem): string {
   }
 
   if (item.customFields && item.customFields.length > 0) {
-    lines.push("", "### Custom Fields", "");
-    for (const field of item.customFields) {
-      const displayValue = field.values && field.values.length > 0
-        ? field.values.map((v) => v.name ? `[${v.id}] ${v.name}` : String(v.id)).join(", ")
-        : formatFieldValue(field.value);
-      lines.push(`- **${field.name}:** ${displayValue}`);
+    const regularFields = item.customFields.filter((f) => f.type !== "TestStepsFieldValue");
+    const testStepFields = item.customFields.filter((f) => f.type === "TestStepsFieldValue");
+
+    if (regularFields.length > 0) {
+      lines.push("", "### Custom Fields", "");
+      for (const field of regularFields) {
+        const displayValue = field.values && field.values.length > 0
+          ? field.values.map((v) => v.name ? `[${v.id}] ${v.name}` : String(v.id)).join(", ")
+          : formatFieldValue(field.value);
+        lines.push(`- **${field.name}:** ${displayValue}`);
+      }
+    }
+
+    for (const field of testStepFields) {
+      const steps = Array.isArray(field.value) ? (field.value as CbTestStep[]) : [];
+      lines.push("", `### ${field.name}`, "");
+      if (steps.length === 0) {
+        lines.push("_No test steps defined._");
+      } else {
+        lines.push("| # | Action | Expected Result |");
+        lines.push("|---|--------|-----------------|");
+        for (const step of steps) {
+          const num = (step.index ?? 0) + 1;
+          const action = (step.actionDescription ?? "").replace(/\|/g, "\\|").replace(/\n/g, " ");
+          const expected = (step.expectedResults ?? "").replace(/\|/g, "\\|").replace(/\n/g, " ");
+          lines.push(`| ${num} | ${action} | ${expected} |`);
+        }
+      }
     }
   }
 
@@ -118,6 +142,49 @@ export function formatReferences(page: CbItemRelationsPage): string {
   }
 
   return lines.join("\n");
+}
+
+export function formatReviews(reviews: CbTrackerItemReview[]): string {
+  if (reviews.length === 0) return "_No reviews found for this item._";
+
+  const sections = reviews.map((review, idx) => {
+    const result = review.result ?? "UNDECIDED";
+    const resultEmoji = result === "APPROVED" ? "✅" : result === "REJECTED" ? "❌" : "⏳";
+    const lines: string[] = [
+      `### Review ${idx + 1} — ${resultEmoji} ${result}`,
+      "",
+    ];
+
+    if (review.config) {
+      const cfg = review.config;
+      lines.push("**Config:**");
+      if (cfg.requiredApprovals !== undefined) lines.push(`- Required approvals: ${cfg.requiredApprovals}`);
+      if (cfg.requiredRejections !== undefined) lines.push(`- Required rejections: ${cfg.requiredRejections}`);
+      if (cfg.requiredSignature) lines.push(`- Signature required: ${cfg.requiredSignature}`);
+      if (cfg.roleRequired !== undefined) lines.push(`- Role required: ${cfg.roleRequired}`);
+      lines.push("");
+    }
+
+    const reviewers = review.reviewers ?? [];
+    if (reviewers.length > 0) {
+      lines.push(`**Reviewers (${reviewers.length}):**`, "");
+      lines.push("| Reviewer | Role | Decision | Reviewed At |");
+      lines.push("|----------|------|----------|-------------|");
+      for (const r of reviewers) {
+        const user = r.user?.name ?? "?";
+        const role = r.asRole?.name ?? "-";
+        const decision = r.decision ?? "UNDECIDED";
+        const at = r.reviewedAt ? r.reviewedAt.replace("T", " ").slice(0, 16) : "-";
+        lines.push(`| ${user} | ${role} | ${decision} | ${at} |`);
+      }
+    } else {
+      lines.push("_No reviewers assigned._");
+    }
+
+    return lines.join("\n");
+  });
+
+  return [`## Reviews (${reviews.length})`, "", ...sections].join("\n\n");
 }
 
 export function formatComments(comments: CbComment[]): string {

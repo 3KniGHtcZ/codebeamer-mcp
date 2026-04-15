@@ -4,7 +4,7 @@ An MCP (Model Context Protocol) server for Codebeamer ALM. Allows Claude and oth
 
 [![codebeamer-mcp MCP server](https://glama.ai/mcp/servers/3KniGHtcZ/codebeamer-mcp/badges/card.svg)](https://glama.ai/mcp/servers/3KniGHtcZ/codebeamer-mcp)
 
-## Tools (17)
+## Tools (18)
 
 ### Read
 
@@ -16,10 +16,11 @@ An MCP (Model Context Protocol) server for Codebeamer ALM. Allows Claude and oth
 | `get_tracker` | Get tracker details |
 | `list_tracker_items` | List items in a tracker |
 | `search_items` | Full-text / cbQL search |
-| `get_item` | Get item details |
+| `get_item` | Get item details including test steps (action + expected result) for test case items |
 | `get_item_relations` | Get outgoing/incoming associations (depends on, blocks, …) |
 | `get_item_references` | Get upstream/downstream traceability references (derived from, covers, …) |
 | `get_item_comments` | Get item comments |
+| `get_item_reviews` | Get Review Hub reviews for an item (result, reviewers, votes) |
 | `get_user` | Get user details |
 
 ### Write
