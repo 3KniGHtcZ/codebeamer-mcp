@@ -72,6 +72,7 @@ export interface CbItem {
   createdBy?: CbReference;
   modifiedBy?: CbReference;
   storyPoints?: number;
+  typeName?: string;
   customFields?: Array<{ fieldId: number; name: string; type?: string; value?: unknown; values?: unknown[] }>;
 }
 

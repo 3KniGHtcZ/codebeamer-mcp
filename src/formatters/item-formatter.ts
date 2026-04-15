@@ -211,6 +211,60 @@ export function formatReviews(reviews: CbTrackerItemReview[]): string {
   return [`## Reviews (${reviews.length})`, "", ...sections].join("\n\n");
 }
 
+export function formatReviewItem(
+  item: CbItem,
+  relations: CbItemRelationsPage,
+  nameMap: Map<number, string> = new Map(),
+): string {
+  const lines: string[] = [`## Review: [${item.id}] ${item.name}`, ""];
+
+  const reviewers = (item.customFields ?? []).find((f) => f.name === "Reviewers");
+  const moderators = (item.customFields ?? []).find((f) => f.name === "Moderators");
+  const approvedField = (item.customFields ?? []).find((f) => f.name === "customField[2]");
+  const rejectedField = (item.customFields ?? []).find((f) => f.name === "customField[3]");
+
+  const approved = approvedField?.value === true;
+  const rejected = rejectedField?.value === true;
+  const statusLabel = approved ? "✅ APPROVED" : rejected ? "❌ REJECTED" : "⏳ IN PROGRESS";
+
+  lines.push(`**Status:** ${statusLabel}`);
+  lines.push(`**Tracker:** ${item.tracker?.name ?? "?"}`);
+  lines.push(`**Created:** ${item.createdAt ?? "?"} by ${item.createdBy?.name ?? "?"}`);
+  lines.push("");
+
+  if (reviewers) {
+    const vals = reviewers.values as Array<{ name?: string }> | undefined;
+    const names = vals?.map((v) => v.name ?? "?").join(", ") ?? "_none_";
+    lines.push(`**Reviewers:** ${names}`);
+  }
+  if (moderators) {
+    const vals = moderators.values as Array<{ name?: string }> | undefined;
+    const names = vals?.map((v) => v.name ?? "?").join(", ") ?? "_none_";
+    lines.push(`**Moderators:** ${names}`);
+  }
+
+  const downstream = relations.downstreamReferences ?? [];
+  lines.push("", `**Reviewed items:** ${downstream.length} total`, "");
+
+  if (downstream.length > 0) {
+    lines.push("| # | Item ID | Name | Version |");
+    lines.push("|---|---------|------|---------|");
+    const shown = downstream.slice(0, 20);
+    for (let i = 0; i < shown.length; i++) {
+      const ref = shown[i];
+      const id = ref.itemRevision?.id ?? 0;
+      const name = (nameMap.get(id) ?? ref.itemRevision?.name ?? String(id)).replace(/\|/g, "\\|");
+      const ver = ref.itemRevision?.version ?? "?";
+      lines.push(`| ${i + 1} | ${id} | ${name} | ${ver} |`);
+    }
+    if (downstream.length > 20) {
+      lines.push(`| … | … | _(${downstream.length - 20} more)_ | … |`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
 export function formatComments(comments: CbComment[]): string {
   if (comments.length === 0) return "_No comments found._";
 

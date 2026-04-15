@@ -6,6 +6,7 @@ import {
   formatReferences,
   formatComments,
   formatReviews,
+  formatReviewItem,
 } from "../formatters/item-formatter.js";
 
 export function registerItemDetailTools(
@@ -93,7 +94,30 @@ export function registerItemDetailTools(
     },
     async ({ itemId }) => {
       const reviews = await client.getItemReviews(itemId);
-      return { content: [{ type: "text", text: formatReviews(reviews) }] };
+      if (reviews.length > 0) {
+        return { content: [{ type: "text", text: formatReviews(reviews) }] };
+      }
+      // API returned no reviews — check if this item IS a review itself
+      const item = await client.getItem(itemId);
+      if (item.typeName === "REVIEW") {
+        const relations = await client.getItemRelations(itemId);
+        const downstream = relations.downstreamReferences ?? [];
+        const shownIds = downstream
+          .slice(0, 20)
+          .map((r) => r.itemRevision?.id)
+          .filter((id): id is number => id !== undefined);
+        const nameMap = new Map<number, string>();
+        if (shownIds.length > 0) {
+          const fetched = await client.searchItems(
+            `item.id IN (${shownIds.join(",")})`,
+            1,
+            25,
+          );
+          for (const fi of fetched) nameMap.set(fi.id, fi.name);
+        }
+        return { content: [{ type: "text", text: formatReviewItem(item, relations, nameMap) }] };
+      }
+      return { content: [{ type: "text", text: "_No reviews found for this item._" }] };
     },
   );
 }
