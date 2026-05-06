@@ -3,7 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CodebeamerClient } from "../client/codebeamer-client.js";
 import {
   formatItemList,
-  formatItem,
+  formatItemSummary,
 } from "../formatters/item-formatter.js";
 
 export function registerItemTools(
@@ -88,8 +88,9 @@ export function registerItemTools(
     {
       title: "Get Item",
       description:
-        "Get full details of a Codebeamer work item by its numeric ID. " +
-        "Returns status, priority, assignees, description, and custom fields.",
+        "Get a lightweight summary of a Codebeamer work item: ID, name, tracker, status and description. " +
+        "Use this when you only need to identify the item and read its description. " +
+        "For priority, assignees, dates, story points, custom fields and test steps, call get_item_details.",
       inputSchema: {
         itemId: z
           .number()
@@ -100,7 +101,7 @@ export function registerItemTools(
     },
     async ({ itemId }) => {
       const item = await client.getItem(itemId);
-      return { content: [{ type: "text", text: formatItem(item) }] };
+      return { content: [{ type: "text", text: formatItemSummary(item) }] };
     },
   );
 }

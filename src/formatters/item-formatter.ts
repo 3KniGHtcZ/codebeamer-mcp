@@ -24,6 +24,98 @@ export function formatItemList(items: CbItem[]): string {
   ].join("\n");
 }
 
+export function formatItemSummary(item: CbItem): string {
+  const lines: string[] = [
+    `## [${item.id}] ${item.name}`,
+    "",
+    `- **Tracker:** ${item.tracker?.name ?? "?"} (ID: ${item.tracker?.id ?? "?"})`,
+    `- **Status:** ${item.status?.name ?? "?"}`,
+  ];
+
+  const description =
+    typeof item.description === "string"
+      ? item.description
+      : item.description?.value ?? item.description?.markup;
+  if (description) {
+    lines.push("", "### Description", "", description);
+  }
+
+  return lines.join("\n");
+}
+
+export function formatItemDetails(item: CbItem): string {
+  const lines: string[] = [
+    `## [${item.id}] ${item.name}`,
+    "",
+    `- **Project:** ${item.project?.name ?? "?"}`,
+    `- **Priority:** ${item.priority?.name ?? "?"}`,
+    `- **Assigned to:** ${item.assignedTo?.map((u) => u.name).join(", ") || "unassigned"}`,
+    `- **Created:** ${item.createdAt ?? "?"} by ${item.createdBy?.name ?? "?"}`,
+    `- **Updated:** ${item.updatedAt ?? "?"}`,
+  ];
+
+  if (item.storyPoints !== undefined) {
+    lines.push(`- **Story Points:** ${item.storyPoints}`);
+  }
+
+  if (item.customFields && item.customFields.length > 0) {
+    const isTestStepField = (f: { type?: string }) =>
+      f.type === "TestStepsFieldValue" || f.type === "TableFieldValue";
+
+    const regularFields = item.customFields.filter((f) => !isTestStepField(f));
+    const testStepFields = item.customFields.filter((f) => isTestStepField(f));
+
+    if (regularFields.length > 0) {
+      lines.push("", "### Custom Fields", "");
+      for (const field of regularFields) {
+        const vals = field.values as Array<{ id: number; name?: string }> | undefined;
+        const displayValue = vals && vals.length > 0
+          ? vals.map((v) => v.name ? `[${v.id}] ${v.name}` : String(v.id)).join(", ")
+          : formatFieldValue(field.value);
+        lines.push(`- **${field.name}:** ${displayValue}`);
+      }
+    }
+
+    for (const field of testStepFields) {
+      let steps: CbTestStep[];
+
+      if (field.type === "TableFieldValue") {
+        const rows = Array.isArray(field.values) ? field.values : [];
+        steps = rows.map((row, idx) => {
+          const cols = Array.isArray(row)
+            ? (row as Array<{ name: string; value: unknown }>)
+            : [];
+          const action = cols.find((c) => c.name === "Action")?.value;
+          const expected = cols.find((c) => c.name === "Expected result")?.value;
+          return {
+            index: idx,
+            actionDescription: typeof action === "string" ? action : undefined,
+            expectedResults: typeof expected === "string" ? expected : undefined,
+          };
+        });
+      } else {
+        steps = Array.isArray(field.value) ? (field.value as CbTestStep[]) : [];
+      }
+
+      lines.push("", `### ${field.name}`, "");
+      if (steps.length === 0) {
+        lines.push("_No test steps defined._");
+      } else {
+        lines.push("| # | Action | Expected Result |");
+        lines.push("|---|--------|-----------------|");
+        for (const step of steps) {
+          const num = (step.index ?? 0) + 1;
+          const action = (step.actionDescription ?? "").replace(/\|/g, "\\|").replace(/\n/g, " ");
+          const expected = (step.expectedResults ?? "").replace(/\|/g, "\\|").replace(/\n/g, " ");
+          lines.push(`| ${num} | ${action} | ${expected} |`);
+        }
+      }
+    }
+  }
+
+  return lines.join("\n");
+}
+
 export function formatItem(item: CbItem): string {
   const lines: string[] = [
     `## [${item.id}] ${item.name}`,
