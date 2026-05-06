@@ -6,12 +6,35 @@ import {
   formatReferences,
   formatComments,
   formatReviews,
+  formatItemDetails,
 } from "../formatters/item-formatter.js";
 
 export function registerItemDetailTools(
   server: McpServer,
   client: CodebeamerClient,
 ): void {
+  server.registerTool(
+    "get_item_details",
+    {
+      title: "Get Item Details",
+      description:
+        "Get the full structured detail of a Codebeamer work item: project, priority, assignees, " +
+        "created/updated timestamps, story points, custom fields and test steps. " +
+        "Description is intentionally omitted — fetch it via get_item.",
+      inputSchema: {
+        itemId: z
+          .number()
+          .int()
+          .positive()
+          .describe("Numeric item (work item) ID"),
+      },
+    },
+    async ({ itemId }) => {
+      const item = await client.getItem(itemId);
+      return { content: [{ type: "text", text: formatItemDetails(item) }] };
+    },
+  );
+
   server.registerTool(
     "get_item_relations",
     {

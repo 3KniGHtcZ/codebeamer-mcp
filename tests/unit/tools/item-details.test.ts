@@ -5,6 +5,7 @@ import {
   formatRelations,
   formatReferences,
   formatComments,
+  formatItemDetails,
 } from "../../../src/formatters/item-formatter.js";
 
 const BASE = "https://test-cb.example.com/v3";
@@ -46,6 +47,65 @@ describe("get_item_references", () => {
     expect(text).toContain("Downstream");
     expect(text).toContain("covers");
     expect(text).toContain("TC-10");
+  });
+});
+
+describe("get_item_details", () => {
+  it("returns metadata and custom fields without description", async () => {
+    const client = makeClient();
+    const item = await client.getItem(500);
+    const text = formatItemDetails(item);
+
+    expect(text).toContain("[500] Login button does not respond");
+    expect(text).toContain("**Project:** Demo Project");
+    expect(text).toContain("**Priority:** High");
+    expect(text).toContain("john.doe");
+    expect(text).toContain("**Story Points:** 5");
+    expect(text).toContain("### Custom Fields");
+    expect(text).toContain("Environment");
+    expect(text).toContain("Production");
+    expect(text).toContain("Authentication");
+
+    expect(text).not.toContain("### Description");
+    expect(text).not.toContain("Steps to reproduce");
+  });
+});
+
+describe("get_item_details — test case with test steps", () => {
+  it("renders test steps as a numbered table", async () => {
+    const client = makeClient();
+    const item = await client.getItem(700);
+    const text = formatItemDetails(item);
+
+    expect(text).toContain("[700] TC-01: Verify user can log in");
+    expect(text).toContain("### Test Steps");
+    expect(text).toContain("| # | Action | Expected Result |");
+    expect(text).toContain("Navigate to the login page");
+    expect(text).toContain("Login form is displayed");
+    expect(text).toContain("Enter valid credentials and click Login");
+    expect(text).toContain("User is redirected to the dashboard");
+    expect(text).toContain("Verify username is shown in the header");
+    expect(text).toContain("Header shows the logged-in user's name");
+  });
+
+  it("renders step numbers starting from 1", async () => {
+    const client = makeClient();
+    const item = await client.getItem(700);
+    const text = formatItemDetails(item);
+
+    const lines = text.split("\n").filter((l) => l.startsWith("| ") && !l.startsWith("| #") && !l.startsWith("|---"));
+    expect(lines[0]).toMatch(/^\| 1 \|/);
+    expect(lines[1]).toMatch(/^\| 2 \|/);
+    expect(lines[2]).toMatch(/^\| 3 \|/);
+  });
+
+  it("does not render test step field under Custom Fields section", async () => {
+    const client = makeClient();
+    const item = await client.getItem(700);
+    const text = formatItemDetails(item);
+
+    const customFieldsSection = text.split("### Test Steps")[0];
+    expect(customFieldsSection).not.toContain("**Test Steps:**");
   });
 });
 
