@@ -1,6 +1,6 @@
 {
   "name": "codebeamer-mcp",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "MCP server for Codebeamer ALM with read and write capabilities",
   "license": "MIT",
   "type": "module",
