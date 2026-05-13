@@ -49,6 +49,7 @@ const items = [
   {
     id: 1001,
     name: "Login button unresponsive on Safari",
+    typeName: "Bug",
     description: { markup: "wiki", value: "Steps to reproduce:\n1. Open Safari 17\n2. Navigate to /login\n3. Enter credentials\n4. Click 'Sign In' button\n\nExpected: Login succeeds\nActual: Nothing happens, no network request sent" },
     tracker: { id: 101, name: "Bug Reports" },
     project: { id: 1, name: "Phoenix Platform" },
@@ -69,6 +70,7 @@ const items = [
   {
     id: 1002,
     name: "Password reset email not delivered",
+    typeName: "Bug",
     description: { markup: "wiki", value: "Users report not receiving password reset emails. Issue started after the email service migration on 2024-10-10." },
     tracker: { id: 101, name: "Bug Reports" },
     project: { id: 1, name: "Phoenix Platform" },
@@ -88,6 +90,7 @@ const items = [
   {
     id: 1003,
     name: "Implement dark mode toggle",
+    typeName: "Requirement",
     description: { markup: "wiki", value: "As a user, I want to switch between light and dark mode so that I can use the app comfortably in different lighting conditions.\n\nAcceptance criteria:\n- Toggle accessible from user settings\n- Preference persisted across sessions\n- All screens support dark mode" },
     tracker: { id: 102, name: "User Stories" },
     project: { id: 1, name: "Phoenix Platform" },

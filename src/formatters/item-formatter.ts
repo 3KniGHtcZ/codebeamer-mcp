@@ -29,6 +29,7 @@ export function formatItemSummary(item: CbItem): string {
     `## [${item.id}] ${item.name}`,
     "",
     `- **Tracker:** ${item.tracker?.name ?? "?"} (ID: ${item.tracker?.id ?? "?"})`,
+    `- **Type:** ${item.categories?.[0]?.name ?? item.typeName ?? "?"}`,
     `- **Status:** ${item.status?.name ?? "?"}`,
   ];
 

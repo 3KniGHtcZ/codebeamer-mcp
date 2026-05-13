@@ -59,6 +59,7 @@ export interface CbTestStep {
 export interface CbItem {
   id: number;
   name: string;
+  typeName?: string;
   description?: string | { markup?: string; value?: string };
   tracker?: CbReference;
   project?: CbReference;
