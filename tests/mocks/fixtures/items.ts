@@ -10,6 +10,7 @@ export function makeItem(overrides: Partial<CbItem> = {}): CbItem {
   return {
     id: 500,
     name: "Login button does not respond",
+    typeName: "Bug",
     description: { markup: "wiki", value: "Steps to reproduce: click login..." },
     tracker: { id: 100, name: "Bug Tracker" },
     project: { id: 1, name: "Demo Project" },
