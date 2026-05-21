@@ -337,11 +337,65 @@ export class CodebeamerClient {
     });
   }
 
-  updateItem(itemId: number, data: CbUpdateItemRequest): Promise<CbItem> {
-    return this.http.put(`/items/${itemId}`, {
-      body: data,
+  async updateItem(itemId: number, data: CbUpdateItemRequest): Promise<CbItem> {
+    // Use the field-based endpoint so updates of individual fields (e.g. description)
+    // do not trigger an unintended status transition on the full-item PUT endpoint.
+    const item = await this.getItem(itemId);
+    const trackerId = item.tracker?.id;
+    if (!trackerId) throw new Error(`Cannot determine tracker for item ${itemId}`);
+
+    const schema = await this.getTrackerSchema(trackerId);
+    const fieldByLegacy = (legacyName: string) =>
+      schema.find((f) => f.legacyRestName === legacyName);
+
+    const fieldValues: Array<Record<string, unknown>> = [];
+
+    if (data.name !== undefined) {
+      const f = fieldByLegacy("name") ?? fieldByLegacy("summary");
+      if (f) fieldValues.push({ fieldId: f.id, type: "TextFieldValue", value: data.name });
+    }
+    if (data.description !== undefined) {
+      const f = fieldByLegacy("description");
+      if (f) fieldValues.push({ fieldId: f.id, type: "WikiTextFieldValue", value: data.description });
+    }
+    if (data.status !== undefined) {
+      const f = fieldByLegacy("status");
+      if (f) fieldValues.push({
+        fieldId: f.id,
+        type: "ChoiceFieldValue",
+        values: [{ id: data.status.id, type: "ChoiceOptionReference" }],
+      });
+    }
+    if (data.priority !== undefined) {
+      const f = fieldByLegacy("priority");
+      if (f) fieldValues.push({
+        fieldId: f.id,
+        type: "ChoiceFieldValue",
+        values: [{ id: data.priority.id, type: "ChoiceOptionReference" }],
+      });
+    }
+    if (data.assignedTo !== undefined) {
+      const f = fieldByLegacy("assignedTo");
+      if (f) fieldValues.push({
+        fieldId: f.id,
+        type: "ChoiceFieldValue",
+        values: data.assignedTo.map((u) => ({ id: u.id, type: "UserReference" })),
+      });
+    }
+    if (data.storyPoints !== undefined) {
+      const f = fieldByLegacy("storyPoints");
+      if (f) fieldValues.push({ fieldId: f.id, type: "IntegerFieldValue", value: data.storyPoints });
+    }
+
+    if (fieldValues.length === 0) return item;
+
+    await this.http.put(`/items/${itemId}/fields`, {
+      params: { quietMode: true },
+      body: { fieldValues },
       resource: `update item ${itemId}`,
     });
+
+    return this.getItem(itemId);
   }
 
   addComment(itemId: number, data: CbCreateCommentRequest): Promise<CbComment> {
