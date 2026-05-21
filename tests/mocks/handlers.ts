@@ -28,6 +28,17 @@ export const handlers = [
     ]),
   ),
 
+  http.get(`${BASE}/trackers/:id/schema`, () =>
+    HttpResponse.json([
+      { id: 1, name: "Summary", legacyRestName: "name" },
+      { id: 3, name: "Description", legacyRestName: "description" },
+      { id: 7, name: "Status", legacyRestName: "status" },
+      { id: 8, name: "Priority", legacyRestName: "priority" },
+      { id: 9, name: "Assigned to", legacyRestName: "assignedTo" },
+      { id: 10, name: "Story Points", legacyRestName: "storyPoints" },
+    ]),
+  ),
+
   http.get(`${BASE}/trackers/:id/items`, () =>
     HttpResponse.json([makeItem()]),
   ),
@@ -78,16 +89,9 @@ export const handlers = [
     );
   }),
 
-  // Update item
-  http.put(`${BASE}/items/:id`, async ({ params, request }) => {
-    const body = (await request.json()) as Record<string, unknown>;
-    return HttpResponse.json(
-      makeItem({
-        id: Number(params.id),
-        ...(body.name != null && { name: body.name as string }),
-        ...(body.status != null && { status: body.status as { id: number; name: string } }),
-      }),
-    );
+  // Update item via field-based endpoint
+  http.put(`${BASE}/items/:id/fields`, async ({ params }) => {
+    return HttpResponse.json(makeItem({ id: Number(params.id) }));
   }),
 
   // Add comment (multipart/form-data)
